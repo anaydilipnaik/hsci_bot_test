@@ -1,0 +1,184 @@
+/* PreferencesLayout.css */
+.preferences-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #f4f4f9;
+  color: #333;
+  font-family: "Arial", sans-serif;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin: auto;
+  width: 80%;
+  max-width: 600px;
+}
+
+.preferences-container span {
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+}
+
+.preferences-container button {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.preferences-container button:hover {
+  background-color: #45a049;
+}
+
+.language-preferences {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.language-preferences h2 {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.language-preferences label {
+  display: block;
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.language-preferences input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.service-preferences, .language-preferences {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.service-heading, .language-heading {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.service-label, .language-label {
+  display: block;
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.service-checkbox, .language-checkbox {
+  margin-right: 10px;
+}
+
+.options-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f4f4f9;
+  border-bottom: 1px solid #ddd;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.options-bar button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.options-bar button:hover {
+  background-color: #45a049;
+}
+
+.options-bar .toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 34px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.options-bar .slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.options-bar .slider:before {
+  position: absolute;
+  content: "";
+  height: 12px;
+  width: 12px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #4CAF50;
+}
+
+input:checked + .slider:before {
+  transform: translateX(14px);
+}
+
+.options-bar label {
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.options-bar .timezone-select {
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 2px solid #4CAF50; 
+  background-color: #ffffff;
+  color: #333;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.options-bar .timezone-select:hover {
+  background-color: #e2e2e5;
+  border-color: #45a049; 
+}
