@@ -92,7 +92,7 @@ async function triggerFunction(payload) {
     };
 
     // Send POST requests with the Authorization header
-    // await axios.post(gupshupUrl, payloadDataPatient, config);
+    await axios.post(gupshupUrl, payloadDataPatient, config);
 
     // const payloadDataScp = {
     //   event_name: "appointment_details",
