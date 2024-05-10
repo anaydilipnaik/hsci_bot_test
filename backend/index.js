@@ -7,6 +7,10 @@ const axios = require("axios"); // Import Axios
 const app = express();
 app.use(express.json());
 
+app.get("/", (req, res) => {
+  res.send("Hello Vercel!");
+});
+
 // Initialize the Supabase client
 const supabaseUrl = "https://anczzwscgxogzohrdbnv.supabase.co";
 const supabaseAnonKey =
