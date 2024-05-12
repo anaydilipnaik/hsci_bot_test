@@ -39,6 +39,18 @@ scpChannel.on(
 );
 scpChannel.subscribe();
 
+// Listen for changes on 'appointments' table using the Realtime client
+const appointmentsChannel = realtime.channel("public:appointments");
+scpChannel.on(
+  "postgres_changes",
+  { event: "UPDATE", schema: "public", table: "appointments" },
+  (payload) => {
+    // triggerFunction(payload);
+    console.log("APPOINTMENTS PAYLOAD: ", payload);
+  }
+);
+appointmentsChannel.subscribe();
+
 // Function to handle the Realtime changes and perform subsequent actions
 async function triggerFunction(payload) {
   try {
@@ -51,20 +63,30 @@ async function triggerFunction(payload) {
     const max = 999999;
     const randomCode = Math.floor(Math.random() * (max - min + 1) + min);
 
-    const insertResult = await supabase.from("appointments").insert([
-      {
-        scp_id: payload.new.id,
-        patient_id: data.scp_id,
-        meeting_date: data.date,
-        meeting_time: data.start_time + "-" + data.end_time,
-        meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
-        patient_phone: payload.new.whatsapp_phone_no,
-        scp_phone: data.phone,
-      },
-    ]);
-    if (insertResult.error) throw insertResult.error;
+    const insertResult = await supabase
+      .from("appointments")
+      .insert([
+        {
+          scp_id: payload.new.id,
+          patient_id: data.scp_id,
+          meeting_date: data.date,
+          meeting_time: data.start_time + "-" + data.end_time,
+          meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
+          patient_phone: payload.new.whatsapp_phone_no,
+          scp_phone: data.phone,
+          status: "DRAFT",
+        },
+      ])
+      .select();
 
-    console.log("Insert successful:", insertResult.data);
+    if (insertResult.error) {
+      throw insertResult.error;
+    }
+
+    // Assuming 'id' is the name of the auto-increment primary key column in the 'appointments' table
+    const newAppointmentId = insertResult.data[0].id;
+    console.log("insertResult: ", insertResult);
+    console.log("Insert successful, new appointment ID:", newAppointmentId);
 
     // Define headers for the POST request
     const config = {
@@ -87,6 +109,7 @@ async function triggerFunction(payload) {
         meeting_date: data.date,
         meeting_time: data.start_time + "-" + data.end_time,
         meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
+        appointment_id: newAppointmentId,
       },
       txid: "123",
     };
