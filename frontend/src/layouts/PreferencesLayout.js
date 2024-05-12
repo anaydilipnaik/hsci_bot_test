@@ -310,7 +310,7 @@ const PreferencesLayout = () => {
           textAlign: "center",
         }}
       >
-        Something went wrong.
+        Loading...
       </span>
     </div>
   );
