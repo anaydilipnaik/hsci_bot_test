@@ -220,41 +220,8 @@ const PreferencesLayout = () => {
     }
   }, [user]);
 
-  // useEffect(() => {
-  //   const myHeaders = new Headers();
-  //   myHeaders.append("Authorization", "bc9261c7-2d89-4415-a439-a98609b58fc8");
-  //   myHeaders.append("Content-Type", "application/json");
-
-  //   const raw = JSON.stringify({
-  //     event_name: "appointment_details",
-  //     user: {
-  //       phone: "16693061513",
-  //       fname: "Anay Naik",
-  //     },
-  //     txid: "123",
-  //   });
-
-  //   const requestOptions = {
-  //     method: "POST",
-  //     headers: myHeaders,
-  //     body: raw,
-  //     redirect: "follow",
-  //   };
-
-  //   // Reminder: Ensure you have clicked "Request temporary access to the demo server" at https://cors-anywhere.herokuapp.com/corsdemo
-  //   const url =
-  //     "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
-  //   const proxy = "https://cors-anywhere.herokuapp.com/";
-
-  //   fetch(proxy + url, requestOptions)
-  //     .then((response) => response.text())
-  //     .then((result) => console.log(result))
-  //     .catch((error) => console.error("Error:", error));
-  // }, []);
-
-  return (
-    user &&
-    (!isNext ? (
+  return user ? (
+    !isNext ? (
       <div className="preferences-container">
         <span
           style={{
@@ -323,7 +290,29 @@ const PreferencesLayout = () => {
         handleSubmit={handleSubmit}
         initialAvailability={initialAvailability}
       />
-    ))
+    )
+  ) : (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        backgroundColor: "#f4f4f9",
+        color: "#333",
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
+      <span
+        style={{
+          fontSize: "24px",
+          textAlign: "center",
+        }}
+      >
+        Something went wrong.
+      </span>
+    </div>
   );
 };
 
