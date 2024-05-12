@@ -41,7 +41,7 @@ scpChannel.subscribe();
 
 // Listen for changes on 'appointments' table using the Realtime client
 const appointmentsChannel = realtime.channel("public:appointments");
-scpChannel.on(
+appointmentsChannel.on(
   "postgres_changes",
   { event: "UPDATE", schema: "public", table: "appointments" },
   (payload) => {
@@ -62,6 +62,8 @@ async function triggerFunction(payload) {
     const min = 100000;
     const max = 999999;
     const randomCode = Math.floor(Math.random() * (max - min + 1) + min);
+
+    console.log("DATA: ", data);
 
     const insertResult = await supabase
       .from("appointments")
