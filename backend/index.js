@@ -45,11 +45,39 @@ appointmentsChannel.on(
   "postgres_changes",
   { event: "UPDATE", schema: "public", table: "appointments" },
   (payload) => {
-    // triggerFunction(payload);
-    console.log("APPOINTMENTS PAYLOAD: ", payload);
+    if (payload.new.status === "LIVE") deleteScpAvailability(payload);
   }
 );
 appointmentsChannel.subscribe();
+
+// Delete the availabilities once appointment is confirmed
+async function deleteScpAvailability(payload) {
+  let start_time = payload.new.meeting_time.split("-")[0];
+  let end_time = payload.new.meeting_time.split("-")[1];
+  let meeting_date = payload.new.meeting_date;
+
+  let scp_ids = [payload.new.scp_id, payload.new.patient_id];
+
+  try {
+    // Loop through each scp_id and perform the delete operation
+    for (const scp_id of scp_ids) {
+      const { data, error } = await supabase
+        .from("scp_availability")
+        .delete()
+        .match({
+          scp_id: scp_id,
+          start_time: start_time,
+          end_time: end_time,
+          date: meeting_date,
+        });
+
+      if (error) throw error;
+      console.log(`Rows deleted for SCP ID ${scp_id}:`, data);
+    }
+  } catch (err) {
+    console.error("Error in deleteScpAvailability:", err.message);
+  }
+}
 
 // Function to handle the Realtime changes and perform subsequent actions
 async function triggerFunction(payload) {
