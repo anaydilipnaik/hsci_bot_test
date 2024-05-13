@@ -180,19 +180,21 @@ const PreferencesLayout = () => {
       getSCPByPhone(decryptPhone(phoneTemp)).then((res) => {
         setUser(res);
 
-        // Set language preferences
-        const languageUpdates = {};
-        res.languages_spoken.forEach((lang) => {
-          languageUpdates[lang.toLowerCase()] = true;
-        });
-        setPreferences((prev) => ({ ...prev, ...languageUpdates }));
+        if (res) {
+          // Set language preferences
+          const languageUpdates = {};
+          res.languages_spoken.forEach((lang) => {
+            languageUpdates[lang.toLowerCase()] = true;
+          });
+          setPreferences((prev) => ({ ...prev, ...languageUpdates }));
 
-        // Set service preferences
-        const serviceUpdates = {};
-        res.services_offered.forEach((service) => {
-          serviceUpdates[service] = true;
-        });
-        setServices((prev) => ({ ...prev, ...serviceUpdates }));
+          // Set service preferences
+          const serviceUpdates = {};
+          res.services_offered.forEach((service) => {
+            serviceUpdates[service] = true;
+          });
+          setServices((prev) => ({ ...prev, ...serviceUpdates }));
+        }
       });
     }
   }, [location, setUser]);
