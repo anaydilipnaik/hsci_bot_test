@@ -147,21 +147,21 @@ async function triggerFunction(payload) {
     // Send POST requests with the Authorization header
     await axios.post(gupshupUrl, payloadDataPatient, config);
 
-    // const payloadDataScp = {
-    //   event_name: "appointment_details",
-    //   event_time: JSON.stringify(new Date()),
-    //   user: {
-    //     phone: data.phone,
-    //     name: data.name,
-    //     matched_person: payload.new.name,
-    //     meeting_date: data.date,
-    //     meeting_time: data.start_time + "-" + data.end_time,
-    //     meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
-    //   },
-    //   txid: "123",
-    // };
+    const payloadDataScp = {
+      event_name: "appointment_details",
+      event_time: JSON.stringify(new Date()),
+      user: {
+        phone: data.phone,
+        name: data.name,
+        matched_person: payload.new.name,
+        meeting_date: data.date,
+        meeting_time: data.start_time + "-" + data.end_time,
+        meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
+      },
+      txid: "123",
+    };
 
-    // await axios.post(gupshupUrl, payloadDataScp, config);
+    await axios.post(gupshupUrl, payloadDataScp, config);
   } catch (err) {
     console.error("Error in trigger function:", err.message);
   }
