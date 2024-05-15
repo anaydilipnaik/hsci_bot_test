@@ -1,15 +1,14 @@
-import React from "react";
-import FullCalendar from "@fullcalendar/react";
-import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin from "@fullcalendar/interaction";
-import momentTimezonePlugin from "@fullcalendar/moment-timezone";
+import React, { useState } from "react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
 import Sidebar from "../components/Sidebar";
+import CustomEvent from "./CustomEvent";
+
+const localizer = momentLocalizer(moment);
 
 const CalendarComponent = ({
-  weekendsVisible,
   currentEvents,
-  handleWeekendsToggle,
   handleDateSelect,
   handleEventClick,
   handleEvents,
@@ -19,12 +18,11 @@ const CalendarComponent = ({
   handleTimeZoneChange,
   handleSubmit,
   initialAvailability,
+  events,
 }) => {
   return (
     <>
       <Sidebar
-        weekendsVisible={weekendsVisible}
-        handleWeekendsToggle={handleWeekendsToggle}
         currentEvents={currentEvents}
         setIsNext={setIsNext}
         selectedTimeZone={selectedTimeZone}
@@ -40,32 +38,20 @@ const CalendarComponent = ({
           margin: "20px auto",
           maxWidth: "1000px",
           width: "90%",
+          height: "500px",
         }}
       >
-        <FullCalendar
-          plugins={[
-            dayGridPlugin,
-            timeGridPlugin,
-            interactionPlugin,
-            momentTimezonePlugin,
-          ]}
-          timeZone={selectedTimeZone}
-          headerToolbar={{
-            left: "prev,next",
-            center: "title",
-            right: "today",
+        <Calendar
+          localizer={localizer}
+          events={events}
+          defaultView="week"
+          views={["week", "day"]}
+          selectable
+          onSelectSlot={handleDateSelect}
+          style={{ height: "100%" }}
+          components={{
+            event: CustomEvent,
           }}
-          initialView="timeGridWeek"
-          editable={true}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          weekends={weekendsVisible}
-          initialEvents={initialAvailability}
-          select={handleDateSelect}
-          eventContent={renderEventContent}
-          // eventClick={handleEventClick}
-          eventsSet={handleEvents}
         />
       </div>
     </>

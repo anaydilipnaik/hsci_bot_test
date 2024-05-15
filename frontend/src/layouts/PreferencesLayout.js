@@ -14,9 +14,9 @@ import {
   addSCPAvailability,
   getScpAvailability,
 } from "../controllers/scp";
+import moment from "moment";
 
 const PreferencesLayout = () => {
-  const [weekendsVisible, setWeekendsVisible] = useState(true);
   const [currentEvents, setCurrentEvents] = useState([]);
   const [selectedTimeZone, setSelectedTimeZone] = useState(
     "America/Los_Angeles"
@@ -56,36 +56,31 @@ const PreferencesLayout = () => {
     setSelectedTimeZone(e.target.value);
   };
 
-  const handleWeekendsToggle = () => {
-    setWeekendsVisible(!weekendsVisible);
+  const [events, setEvents] = useState([]);
+
+  const convertDateString = (dateString) => {
+    const date = moment(new Date(dateString));
+    const time = date.format("HH:mm");
+    const formattedDate = date.format("YYYY-MM-DD");
+    return { date: date.toDate(), time, formattedDate }; // returning the date object
   };
 
-  const handleDateSelect = (selectInfo) => {
-    let calendarApi = selectInfo.view.calendar;
+  const handleDateSelect = (res) => {
+    const { date: start, formattedDate: startDate } = convertDateString(
+      res.start
+    );
+    const { date: end, formattedDate: endDate } = convertDateString(res.end);
 
-    calendarApi.unselect(); // clear date selection
-
-    const date1 = new Date(selectInfo.startStr);
-
-    // Extracting the date in YYYY-MM-DD format
-    const dateString = date1.toISOString().split("T")[0]; // Splits the ISO string by 'T' and takes the first part
-
-    // Extracting the time in HH:MM format
-    const startTimeString = date1.toTimeString().split(" ")[0].substring(0, 5);
-
-    const date2 = new Date(selectInfo.endStr);
-
-    const endTimeString = date2.toTimeString().split(" ")[0].substring(0, 5);
-
-    calendarApi.addEvent({
-      id: createEventId(),
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
-      allDay: selectInfo.allDay,
-    });
-
-    addSCPAvailability(user.id, dateString, startTimeString, endTimeString)
+    addSCPAvailability(user.id, startDate, start, end)
       .then(() => {
+        setEvents((prevEvents) => [
+          ...prevEvents,
+          {
+            start,
+            end,
+            title: "New Event", // or any title you want to give
+          },
+        ]);
         return getAvailability(user.id);
       })
       .catch((err) => console.error(err));
@@ -155,7 +150,8 @@ const PreferencesLayout = () => {
       user.id,
       languagesSpoken,
       servicesOffered,
-      selectedTimeZone
+      // selectedTimeZone
+      "PST"
     )
       .then((res) => {
         if (res) {
@@ -201,18 +197,16 @@ const PreferencesLayout = () => {
 
   const getAvailability = () => {
     getScpAvailability(user.id).then((res) => {
-      let initialData = [];
-      res.forEach((row) => {
-        let json = {};
-        let date = row.date;
-        let start = date + "T" + row.start_time + ":00";
-        let end = date + "T" + row.end_time + ":00";
-        json.id = row.id;
-        json.start = start;
-        json.end = end;
-        initialData.push(json);
+      let initialData = res.map((row) => {
+        let start = new Date(row.start_time); // assuming row.start_time is a date string
+        let end = new Date(row.end_time); // assuming row.end_time is a date string
+        return {
+          id: row.id,
+          start: start,
+          end: end,
+        };
       });
-      setInitialAvailability(initialData);
+      setEvents(initialData);
     });
   };
 
@@ -279,9 +273,7 @@ const PreferencesLayout = () => {
       </div>
     ) : (
       <CalendarComponent
-        weekendsVisible={weekendsVisible}
         currentEvents={currentEvents}
-        handleWeekendsToggle={handleWeekendsToggle}
         handleDateSelect={handleDateSelect}
         handleEventClick={handleEventClick}
         handleEvents={handleEvents}
@@ -291,6 +283,7 @@ const PreferencesLayout = () => {
         handleTimeZoneChange={handleTimeZoneChange}
         handleSubmit={handleSubmit}
         initialAvailability={initialAvailability}
+        events={events}
       />
     )
   ) : (
