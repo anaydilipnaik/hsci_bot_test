@@ -62,25 +62,18 @@ const PreferencesLayout = () => {
     const date = moment(new Date(dateString));
     const time = date.format("HH:mm");
     const formattedDate = date.format("YYYY-MM-DD");
-    return { date: date.toDate(), time, formattedDate }; // returning the date object
+    return { formattedDate, time }; // returning the date object
   };
 
   const handleDateSelect = (res) => {
-    const { date: start, formattedDate: startDate } = convertDateString(
-      res.start
-    );
-    const { date: end, formattedDate: endDate } = convertDateString(res.end);
+    let start = res.start;
+    let end = res.end;
 
-    addSCPAvailability(user.id, startDate, start, end)
+    const obj1 = convertDateString(res.start);
+    const obj2 = convertDateString(res.end);
+
+    addSCPAvailability(user.id, obj1.formattedDate, obj1.time, obj2.time)
       .then(() => {
-        setEvents((prevEvents) => [
-          ...prevEvents,
-          {
-            start,
-            end,
-            title: "New Event", // or any title you want to give
-          },
-        ]);
         return getAvailability(user.id);
       })
       .catch((err) => console.error(err));
@@ -151,7 +144,7 @@ const PreferencesLayout = () => {
       languagesSpoken,
       servicesOffered,
       // selectedTimeZone
-      "PST"
+      "America/Los_Angeles"
     )
       .then((res) => {
         if (res) {
@@ -198,8 +191,14 @@ const PreferencesLayout = () => {
   const getAvailability = () => {
     getScpAvailability(user.id).then((res) => {
       let initialData = res.map((row) => {
-        let start = new Date(row.start_time); // assuming row.start_time is a date string
-        let end = new Date(row.end_time); // assuming row.end_time is a date string
+        // Combine date and time strings
+        let startDateTime = `${row.date} ${row.start_time}`;
+        let endDateTime = `${row.date} ${row.end_time}`;
+
+        // Parse combined strings into Date objects
+        let start = moment(startDateTime, "YYYY-MM-DD HH:mm").toDate();
+        let end = moment(endDateTime, "YYYY-MM-DD HH:mm").toDate();
+
         return {
           id: row.id,
           start: start,
