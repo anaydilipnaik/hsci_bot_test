@@ -16,6 +16,29 @@
   max-width: 600px;
 }
 
+/* Custom styles for mobile view */
+@media (max-width: 768px) {
+  .rbc-toolbar {
+    margin-bottom: 20px; /* Adds space below the toolbar */
+    padding: 0 10px; /* Adds horizontal padding */
+  }
+
+  .rbc-btn-group {
+    display: flex;
+    justify-content: space-between; /* Ensures buttons are evenly spaced */
+    text-align: center;
+    width: 100%;
+    margin-top: 10px; /* Adds a top margin for better spacing */
+    margin-bottom: 10px; /* Adds a bottom margin for better spacing */
+  }
+
+  .rbc-toolbar-label {
+    flex-grow: 1; /* Allows the date label to expand and center align properly */
+    text-align: center;
+    margin-bottom: 10px; /* Adds a bottom margin for separation */
+  }
+}
+
 .preferences-container span {
   font-size: 1.2rem;
   margin-bottom: 20px;

@@ -20,6 +20,9 @@ const CalendarComponent = ({
   initialAvailability,
   events,
 }) => {
+  const scrollToTime = new Date();
+  scrollToTime.setHours(8, 0, 0, 0); // Set the scroll to 8 AM
+
   return (
     <>
       <Sidebar
@@ -52,6 +55,15 @@ const CalendarComponent = ({
           components={{
             event: CustomEvent,
           }}
+          formats={{
+            dayRangeHeaderFormat: ({ start, end }, culture, localizer) =>
+              `${localizer.format(
+                start,
+                "MMM DD, YYYY",
+                culture
+              )} – ${localizer.format(end, "MMM DD, YYYY", culture)}`,
+          }}
+          scrollToTime={scrollToTime}
         />
       </div>
     </>
