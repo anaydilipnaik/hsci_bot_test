@@ -79,6 +79,19 @@ async function deleteScpAvailability(payload) {
   }
 }
 
+const formatDate = (dateString) => {
+  const options = { year: "numeric", month: "long", day: "numeric" };
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-GB", options); // 'en-GB' uses day-month-year order
+};
+
+const formatTime = (timeString) => {
+  const [hours, minutes] = timeString.split(":");
+  const date = new Date();
+  date.setHours(hours, minutes);
+  return date.toLocaleTimeString("en-US", { hour: "numeric", hour12: true });
+};
+
 // Function to handle the Realtime changes and perform subsequent actions
 async function triggerFunction(payload) {
   try {
@@ -136,8 +149,9 @@ async function triggerFunction(payload) {
         phone: payload.new.whatsapp_phone_no,
         name: payload.new.name,
         matched_person: data.name,
-        meeting_date: data.date,
-        meeting_time: data.start_time + "-" + data.end_time,
+        meeting_date: formatDate(data.date),
+        meeting_time:
+          formatTime(data.start_time) + "-" + formatTime(data.end_time),
         meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
         appointment_id: newAppointmentId,
       },
@@ -154,8 +168,9 @@ async function triggerFunction(payload) {
         phone: data.phone,
         name: data.name,
         matched_person: payload.new.name,
-        meeting_date: data.date,
-        meeting_time: data.start_time + "-" + data.end_time,
+        meeting_date: formatDate(data.date),
+        meeting_time:
+          formatTime(data.start_time) + "-" + formatTime(data.end_time),
         meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
       },
       txid: "123",
