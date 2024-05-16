@@ -41,7 +41,7 @@ const CalendarComponent = ({
         }}
       >
         <div className="helperText">
-          Tip: Drag to select a time slot on the calendar.
+          Tip: Long press and drag to select a time slot on the calendar.
         </div>
         <Calendar
           localizer={localizer}

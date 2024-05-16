@@ -14,7 +14,7 @@ const Sidebar = ({
           e.preventDefault();
           setIsNext(false);
         }}
-        style={{ marginRight: "auto" }}
+        style={{ marginRight: "auto", background: "grey" }}
       >
         Go back
       </button>
