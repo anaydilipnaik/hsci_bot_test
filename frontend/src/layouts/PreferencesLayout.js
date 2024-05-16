@@ -7,17 +7,16 @@ import { getSCPByPhone } from "../controllers/scp";
 import { useUser } from "../contexts/userContext";
 import { decryptPhone } from "../utils/decryptPhoneNumber";
 import "./PreferencesLayout.css";
-import { createEventId } from "../utils/event-utils";
 import CalendarComponent from "../components/Calendar";
 import {
   updateSCPPreferences,
   addSCPAvailability,
   getScpAvailability,
+  deleteSCPAvailability,
 } from "../controllers/scp";
 import moment from "moment";
 
 const PreferencesLayout = () => {
-  const [currentEvents, setCurrentEvents] = useState([]);
   const [selectedTimeZone, setSelectedTimeZone] = useState(
     "America/Los_Angeles"
   );
@@ -66,9 +65,6 @@ const PreferencesLayout = () => {
   };
 
   const handleDateSelect = (res) => {
-    let start = res.start;
-    let end = res.end;
-
     const obj1 = convertDateString(res.start);
     const obj2 = convertDateString(res.end);
 
@@ -79,26 +75,20 @@ const PreferencesLayout = () => {
       .catch((err) => console.error(err));
   };
 
-  const handleEventClick = (clickInfo) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete the event '${clickInfo.event.title}'`
-      )
-    ) {
-      clickInfo.event.remove();
-    }
-  };
+  const handleEventClick = (clickInfo, event) => {
+    event.preventDefault();
+    event.stopPropagation();
 
-  const handleEvents = (events) => {
-    setCurrentEvents(events);
-  };
-
-  const renderEventContent = (eventInfo) => {
-    return (
-      <>
-        <b>{eventInfo.timeText}</b>
-      </>
-    );
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      deleteSCPAvailability(clickInfo.id)
+        .then((res) => {
+          console.log("res: ", res);
+          return getAvailability(user.id); // Assuming 'user.id' is available in this scope
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    } else return;
   };
 
   const handleLanguageCheckboxChange = (language) => {
@@ -272,11 +262,8 @@ const PreferencesLayout = () => {
       </div>
     ) : (
       <CalendarComponent
-        currentEvents={currentEvents}
         handleDateSelect={handleDateSelect}
         handleEventClick={handleEventClick}
-        handleEvents={handleEvents}
-        renderEventContent={renderEventContent}
         setIsNext={setIsNext}
         selectedTimeZone={selectedTimeZone}
         handleTimeZoneChange={handleTimeZoneChange}

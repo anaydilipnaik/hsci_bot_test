@@ -159,3 +159,19 @@ export const createAppointment = async (
 
   return { data };
 };
+
+export const deleteSCPAvailability = async (availabilityId) => {
+  try {
+    const { data, error } = await supabase
+      .from("scp_availability")
+      .delete()
+      .match({
+        id: availabilityId,
+      });
+
+    if (error) throw error;
+    console.log(`deleted:`, data);
+  } catch (err) {
+    console.error("Error in deleteScpAvailability:", err.message);
+  }
+};

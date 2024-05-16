@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -8,11 +8,8 @@ import CustomEvent from "./CustomEvent";
 const localizer = momentLocalizer(moment);
 
 const CalendarComponent = ({
-  currentEvents,
   handleDateSelect,
   handleEventClick,
-  handleEvents,
-  renderEventContent,
   setIsNext,
   selectedTimeZone,
   handleTimeZoneChange,
@@ -26,7 +23,6 @@ const CalendarComponent = ({
   return (
     <>
       <Sidebar
-        currentEvents={currentEvents}
         setIsNext={setIsNext}
         selectedTimeZone={selectedTimeZone}
         handleTimeZoneChange={handleTimeZoneChange}
@@ -44,6 +40,9 @@ const CalendarComponent = ({
           height: "500px",
         }}
       >
+        <div className="helperText">
+          Tip: Drag to select a time slot on the calendar.
+        </div>
         <Calendar
           localizer={localizer}
           events={events}
@@ -64,6 +63,7 @@ const CalendarComponent = ({
               )} – ${localizer.format(end, "MMM DD, YYYY", culture)}`,
           }}
           scrollToTime={scrollToTime}
+          onSelectEvent={handleEventClick}
         />
       </div>
     </>
