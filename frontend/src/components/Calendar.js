@@ -38,6 +38,7 @@ const CalendarComponent = ({
           maxWidth: "1000px",
           width: "90%",
           height: "500px",
+          overflow: "hidden",
         }}
       >
         <div className="helperText">
