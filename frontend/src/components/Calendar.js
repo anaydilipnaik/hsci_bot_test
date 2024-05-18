@@ -1,6 +1,7 @@
 import React from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
+import "moment-timezone";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import Sidebar from "../components/Sidebar";
 import CustomEvent from "./CustomEvent";
@@ -12,22 +13,18 @@ const CalendarComponent = ({
   handleEventClick,
   setIsNext,
   selectedTimeZone,
-  handleTimeZoneChange,
   handleSubmit,
-  initialAvailability,
+  handleTimeZoneChange,
   events,
 }) => {
+  const timezones = moment.tz.names();
+
   const scrollToTime = new Date();
   scrollToTime.setHours(8, 0, 0, 0); // Set the scroll to 8 AM
 
   return (
     <>
-      <Sidebar
-        setIsNext={setIsNext}
-        selectedTimeZone={selectedTimeZone}
-        handleTimeZoneChange={handleTimeZoneChange}
-        handleSubmit={handleSubmit}
-      />
+      <Sidebar setIsNext={setIsNext} handleSubmit={handleSubmit} />
       <div
         style={{
           padding: "20px",
@@ -37,10 +34,52 @@ const CalendarComponent = ({
           margin: "20px auto",
           maxWidth: "1000px",
           width: "90%",
-          height: "500px",
+          height: "600px",
           overflow: "hidden",
         }}
       >
+        <div
+          style={{
+            marginBottom: "10px",
+            padding: "10px",
+          }}
+        >
+          <label
+            htmlFor="timezone-select"
+            style={{
+              fontWeight: "bold",
+              fontSize: "14px",
+              marginRight: "10px",
+              display: "inline-block",
+              verticalAlign: "middle",
+            }}
+          >
+            Select Timezone:
+          </label>
+          <select
+            id="timezone-select"
+            value={selectedTimeZone}
+            onChange={handleTimeZoneChange}
+            style={{
+              marginLeft: "10px",
+              padding: "5px 10px",
+              fontSize: "14px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              transition: "border-color 0.3s ease-in-out",
+            }}
+            onMouseOver={(e) => (e.target.style.borderColor = "#888")}
+            onMouseOut={(e) => (e.target.style.borderColor = "#ccc")}
+            onFocus={(e) => (e.target.style.borderColor = "#888")}
+            onBlur={(e) => (e.target.style.borderColor = "#ccc")}
+          >
+            {timezones.map((tz) => (
+              <option key={tz} value={tz}>
+                {tz}
+              </option>
+            ))}
+          </select>
+        </div>
         <div className="helperText">
           Tip: Long press and drag to select a time slot on the calendar.
         </div>

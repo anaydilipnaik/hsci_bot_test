@@ -16,11 +16,10 @@ import {
 } from "../controllers/scp";
 import moment from "moment";
 import axios from "axios";
+import "moment-timezone";
 
 const PreferencesLayout = () => {
-  const [selectedTimeZone, setSelectedTimeZone] = useState(
-    "America/Los_Angeles"
-  );
+  const [selectedTimeZone, setSelectedTimeZone] = useState(moment.tz.guess());
 
   const [preferences, setPreferences] = useState({
     english: false,
@@ -46,7 +45,6 @@ const PreferencesLayout = () => {
 
   const [isNext, setIsNext] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [initialAvailability, setInitialAvailability] = useState([]);
 
   const location = useLocation();
   const { user, setUser } = useUser();
@@ -54,21 +52,38 @@ const PreferencesLayout = () => {
   const handleTimeZoneChange = (e) => {
     e.preventDefault();
     setSelectedTimeZone(e.target.value);
+    moment.tz.setDefault(e.target.value);
   };
 
   const [events, setEvents] = useState([]);
 
-  const convertDateString = (dateString) => {
-    const date = moment(new Date(dateString));
+  const convertDateStringToPST = (dateString) => {
+    console.log("dateString: ", dateString);
+    // Parse the date string with moment and convert it to PST
+    const date = moment(dateString).tz("America/Los_Angeles");
     const time = date.format("HH:mm");
     const formattedDate = date.format("YYYY-MM-DD");
-    return { formattedDate, time }; // returning the date object
+    return { formattedDate, time };
   };
 
   const handleDateSelect = (res) => {
-    const obj1 = convertDateString(res.start);
-    const obj2 = convertDateString(res.end);
+    // Convert the start and end dates to ISO strings before passing to the convert function
+    let startIsoString = new Date(res.start);
+    let formattedStart = moment(startIsoString).format("YYYY-MM-DDTHH:mm:ssZ");
+    let finalStart = moment(formattedStart)
+      .tz(selectedTimeZone, true)
+      .format("YYYY-MM-DDTHH:mm:ssZ");
 
+    let endIsoString = new Date(res.end);
+    let formattedEnd = moment(endIsoString).format("YYYY-MM-DDTHH:mm:ssZ");
+    let finalEnd = moment(formattedEnd)
+      .tz(selectedTimeZone, true)
+      .format("YYYY-MM-DDTHH:mm:ssZ");
+
+    const obj1 = convertDateStringToPST(finalStart);
+    const obj2 = convertDateStringToPST(finalEnd);
+
+    // Add your API call logic here
     addSCPAvailability(user.id, obj1.formattedDate, obj1.time, obj2.time)
       .then(() => {
         return getAvailability(user.id);
@@ -226,6 +241,28 @@ const PreferencesLayout = () => {
   };
 
   useEffect(() => {
+    console.log("Timezone changed to:", selectedTimeZone);
+    console.log("Original events:", events);
+
+    // Convert event times to the selected timezone
+    const updatedEvents = events.map((event) => {
+      let convertedStart = moment(event.start)
+        .tz(selectedTimeZone, true)
+        .toDate();
+      let convertedEnd = moment(event.end).tz(selectedTimeZone, true).toDate();
+
+      return {
+        ...event,
+        start: convertedStart,
+        end: convertedEnd,
+      };
+    });
+
+    console.log("Updated events:", updatedEvents);
+    setEvents(updatedEvents);
+  }, [selectedTimeZone]);
+
+  useEffect(() => {
     if (user && user.id) {
       getAvailability(user.id);
     }
@@ -292,10 +329,9 @@ const PreferencesLayout = () => {
         handleEventClick={handleEventClick}
         setIsNext={setIsNext}
         selectedTimeZone={selectedTimeZone}
-        handleTimeZoneChange={handleTimeZoneChange}
         handleSubmit={handleSubmit}
-        initialAvailability={initialAvailability}
         events={events}
+        handleTimeZoneChange={handleTimeZoneChange}
       />
     )
   ) : (
