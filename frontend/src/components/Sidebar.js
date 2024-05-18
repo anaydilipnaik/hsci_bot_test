@@ -1,12 +1,7 @@
 import React from "react";
 import moment from "moment-timezone";
 
-const Sidebar = ({
-  setIsNext,
-  selectedTimeZone,
-  handleTimeZoneChange,
-  handleSubmit,
-}) => {
+const Sidebar = ({ setIsNext, handleSubmit }) => {
   return (
     <div className="options-bar">
       <button
