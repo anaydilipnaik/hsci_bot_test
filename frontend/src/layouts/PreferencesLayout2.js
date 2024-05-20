@@ -18,7 +18,7 @@ import { format, toZonedTime, fromZonedTime } from "date-fns-tz";
 import axios from "axios";
 import moment from "moment";
 
-const PreferencesLayout = () => {
+const PreferencesLayout2 = () => {
   const [selectedTimeZone, setSelectedTimeZone] = useState(moment.tz.guess());
   const [preferences, setPreferences] = useState({
     english: false,
@@ -326,4 +326,4 @@ const PreferencesLayout = () => {
   );
 };
 
-export default PreferencesLayout;
+export default PreferencesLayout2;
