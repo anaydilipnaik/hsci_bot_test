@@ -8,8 +8,8 @@ BEGIN
             s2.name,
             s2.whatsapp_phone_no AS phone,
             sa2.date,
-            GREATEST(sa1.start_time::time, sa2.start_time::time) AS overlapping_start_time,
-            LEAST(sa1.end_time::time, sa2.end_time::time) AS overlapping_end_time
+            TO_CHAR(GREATEST(sa1.start_time::time, sa2.start_time::time), 'HH24:MI') AS overlapping_start_time,
+            TO_CHAR(LEAST(sa1.end_time::time, sa2.end_time::time), 'HH24:MI') AS overlapping_end_time
         FROM scp s1
         JOIN scp_availability sa1 ON s1.id = sa1.scp_id
         JOIN scp_availability sa2 ON sa1.date = sa2.date
@@ -29,7 +29,7 @@ BEGIN
         phone,
         date,
         overlapping_start_time,
-        (overlapping_start_time + INTERVAL '1 hour') AS new_end_time
+        TO_CHAR(TO_TIMESTAMP(overlapping_start_time, 'HH24:MI') + INTERVAL '1 hour', 'HH24:MI') AS new_end_time
     INTO overlap_record
     FROM overlap;
 

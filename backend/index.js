@@ -43,15 +43,14 @@ scpChannel.subscribe();
 const appointmentsChannel = realtime.channel("public:appointments");
 appointmentsChannel.on(
   "postgres_changes",
-  { event: "UPDATE", schema: "public", table: "appointments" },
+  { event: "INSERT", schema: "public", table: "appointments" },
   (payload) => {
-    if (payload.new.status === "LIVE") deleteScpAvailability(payload);
+    updateScpAvailability(payload);
   }
 );
 appointmentsChannel.subscribe();
 
-// Delete the availabilities once appointment is confirmed
-async function deleteScpAvailability(payload) {
+async function updateScpAvailability(payload) {
   let start_time = payload.new.meeting_time.split("-")[0];
   let end_time = payload.new.meeting_time.split("-")[1];
   let meeting_date = payload.new.meeting_date;
@@ -59,23 +58,85 @@ async function deleteScpAvailability(payload) {
   let scp_ids = [payload.new.scp_id, payload.new.patient_id];
 
   try {
-    // Loop through each scp_id and perform the delete operation
+    // Loop through each scp_id and perform the update operation
     for (const scp_id of scp_ids) {
-      const { data, error } = await supabase
+      const { data: availabilities, error: fetchError } = await supabase
         .from("scp_availability")
-        .delete()
-        .match({
-          scp_id: scp_id,
-          start_time: start_time,
-          end_time: end_time,
-          date: meeting_date,
-        });
+        .select("*")
+        .eq("scp_id", scp_id)
+        .eq("date", meeting_date);
 
-      if (error) throw error;
-      console.log(`Rows deleted for SCP ID ${scp_id}:`, data);
+      if (fetchError) throw fetchError;
+
+      console.log("data for SCP availabilities: ", availabilities);
+
+      for (const availability of availabilities) {
+        const existing_start = availability.start_time;
+        const existing_end = availability.end_time;
+
+        // Check if there is an overlap
+        if (existing_start < end_time && existing_end > start_time) {
+          // Delete the overlapping availability
+          const { error: deleteError } = await supabase
+            .from("scp_availability")
+            .delete()
+            .eq("scp_id", scp_id)
+            .eq("start_time", existing_start)
+            .eq("end_time", existing_end)
+            .eq("date", meeting_date);
+
+          if (deleteError) throw deleteError;
+
+          // Insert new availability slots before the appointment
+          if (existing_start < start_time) {
+            const diffBefore =
+              new Date(`1970-01-01T${start_time}:00Z`) -
+              new Date(`1970-01-01T${existing_start}:00Z`);
+            if (diffBefore >= 3600000) {
+              // 3600000 milliseconds = 1 hour
+              const { error: insertErrorBefore } = await supabase
+                .from("scp_availability")
+                .insert([
+                  {
+                    scp_id: scp_id,
+                    start_time: existing_start,
+                    end_time: start_time,
+                    date: meeting_date,
+                  },
+                ]);
+
+              if (insertErrorBefore) throw insertErrorBefore;
+            }
+          }
+
+          // Insert new availability slots after the appointment
+          if (existing_end > end_time) {
+            const diffAfter =
+              new Date(`1970-01-01T${existing_end}:00Z`) -
+              new Date(`1970-01-01T${end_time}:00Z`);
+            if (diffAfter >= 3600000) {
+              // 3600000 milliseconds = 1 hour
+              const { error: insertErrorAfter } = await supabase
+                .from("scp_availability")
+                .insert([
+                  {
+                    scp_id: scp_id,
+                    start_time: end_time,
+                    end_time: existing_end,
+                    date: meeting_date,
+                  },
+                ]);
+
+              if (insertErrorAfter) throw insertErrorAfter;
+            }
+          }
+        }
+      }
+
+      console.log(`Availability updated for SCP ID ${scp_id}`);
     }
   } catch (err) {
-    console.error("Error in deleteScpAvailability:", err.message);
+    console.error("Error in updateScpAvailability:", err.message);
   }
 }
 
@@ -104,8 +165,6 @@ async function triggerFunction(payload) {
     const max = 999999;
     const randomCode = Math.floor(Math.random() * (max - min + 1) + min);
 
-    console.log("DATA: ", data);
-
     const insertResult = await supabase
       .from("appointments")
       .insert([
@@ -126,7 +185,6 @@ async function triggerFunction(payload) {
       throw insertResult.error;
     }
 
-    // Assuming 'id' is the name of the auto-increment primary key column in the 'appointments' table
     const newAppointmentId = insertResult.data[0].id;
     console.log("insertResult: ", insertResult);
     console.log("Insert successful, new appointment ID:", newAppointmentId);
@@ -161,28 +219,27 @@ async function triggerFunction(payload) {
     // Send POST requests with the Authorization header
     await axios.post(gupshupUrl, payloadDataPatient, config);
 
-    const payloadDataScp = {
-      event_name: "appointment_details",
-      event_time: JSON.stringify(new Date()),
-      user: {
-        phone: data.phone,
-        name: data.name,
-        matched_person: payload.new.name,
-        meeting_date: formatDate(data.date),
-        meeting_time:
-          formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
-      },
-      txid: "123",
-    };
+    // const payloadDataScp = {
+    //   event_name: "appointment_details",
+    //   event_time: JSON.stringify(new Date()),
+    //   user: {
+    //     phone: data.phone,
+    //     name: data.name,
+    //     matched_person: payload.new.name,
+    //     meeting_date: formatDate(data.date),
+    //     meeting_time:
+    //       formatTime(data.start_time) + "-" + formatTime(data.end_time),
+    //     meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
+    //   },
+    //   txid: "123",
+    // };
 
-    await axios.post(gupshupUrl, payloadDataScp, config);
+    // await axios.post(gupshupUrl, payloadDataScp, config);
   } catch (err) {
     console.error("Error in trigger function:", err.message);
   }
 }
 
-// Start the server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running!`);
