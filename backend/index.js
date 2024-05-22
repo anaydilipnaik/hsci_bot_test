@@ -210,7 +210,7 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
+        meeting_link: "https://meet.hsciglobal.org/" + randomCode,
         appointment_id: newAppointmentId,
       },
       txid: "123",
@@ -219,22 +219,22 @@ async function triggerFunction(payload) {
     // Send POST requests with the Authorization header
     await axios.post(gupshupUrl, payloadDataPatient, config);
 
-    // const payloadDataScp = {
-    //   event_name: "appointment_details",
-    //   event_time: JSON.stringify(new Date()),
-    //   user: {
-    //     phone: data.phone,
-    //     name: data.name,
-    //     matched_person: payload.new.name,
-    //     meeting_date: formatDate(data.date),
-    //     meeting_time:
-    //       formatTime(data.start_time) + "-" + formatTime(data.end_time),
-    //     meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
-    //   },
-    //   txid: "123",
-    // };
+    const payloadDataScp = {
+      event_name: "appointment_details",
+      event_time: JSON.stringify(new Date()),
+      user: {
+        phone: data.phone,
+        name: data.name,
+        matched_person: payload.new.name,
+        meeting_date: formatDate(data.date),
+        meeting_time:
+          formatTime(data.start_time) + "-" + formatTime(data.end_time),
+        meeting_link: "https://meet.hsciglobal.org/" + randomCode,
+      },
+      txid: "123",
+    };
 
-    // await axios.post(gupshupUrl, payloadDataScp, config);
+    await axios.post(gupshupUrl, payloadDataScp, config);
   } catch (err) {
     console.error("Error in trigger function:", err.message);
   }
