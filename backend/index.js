@@ -2,14 +2,53 @@ const express = require("express");
 const { createClient } = require("@supabase/supabase-js");
 const { RealtimeClient } = require("@supabase/realtime-js");
 const axios = require("axios"); // Import Axios
+// const cron = require("node-cron");
 
 // Initialize the Express app
 const app = express();
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("Hello Vercel!");
-});
+/* CRON JOB STARTS */
+// async function checkAppointments() {
+//   try {
+//     const now = new Date();
+//     const currentDateString = now.toISOString().split("T")[0];
+
+//     // Fetch appointments with end time matching current date and hour
+//     const { data, error } = await supabase
+//       .from("appointments")
+//       .select("*")
+//       .eq(
+//         "end_time",
+//         `${currentDateString}T${String(now.getHours()).padStart(2, "0")}:00:00Z`
+//       );
+
+//     if (error) {
+//       console.error("Error fetching appointments:", error);
+//       return;
+//     }
+
+//     for (const appointment of data) {
+//       // Trigger post-appointment feedback
+//       postAppointmentFeedback(appointment);
+//     }
+//   } catch (error) {
+//     console.error("Error in checkAppointments:", error);
+//   }
+// }
+
+// // Stub function for post-appointment feedback
+// function postAppointmentFeedback(appointment) {
+//   console.log("Triggering post-appointment feedback for:", appointment);
+//   // Add your feedback logic here
+// }
+
+// // Schedule the cron job to run every hour
+// cron.schedule("0 * * * *", () => {
+//   console.log("Running hourly appointment check");
+//   checkAppointments();
+// });
+/* CRON JOB ENDS */
 
 // Initialize the Supabase client
 const supabaseUrl = "https://anczzwscgxogzohrdbnv.supabase.co";
@@ -155,6 +194,28 @@ const formatTime = (timeString) => {
 
 // Function to handle the Realtime changes and perform subsequent actions
 async function triggerFunction(payload) {
+  // Define headers for the POST request
+  const config = {
+    headers: {
+      Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
+      "Content-Type": "application/json",
+    },
+  };
+  const gupshupUrl =
+    "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
+
+  const ackPayloadData = {
+    event_name: "preferences_acknowledgement",
+    event_time: JSON.stringify(new Date()),
+    user: {
+      phone: payload.new.whatsapp_phone_no,
+      name: payload.new.name,
+    },
+    txid: "123",
+  };
+
+  await axios.post(gupshupUrl, ackPayloadData, config);
+
   try {
     const { data, error } = await supabase.rpc("find_first_match", {
       given_scp_id: payload.new.id,
@@ -189,17 +250,7 @@ async function triggerFunction(payload) {
     console.log("insertResult: ", insertResult);
     console.log("Insert successful, new appointment ID:", newAppointmentId);
 
-    // Define headers for the POST request
-    const config = {
-      headers: {
-        Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
-        "Content-Type": "application/json",
-      },
-    };
-
     // Gupshup callback URL and payload data
-    const gupshupUrl =
-      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
     const payloadDataPatient = {
       event_name: "appointment_details",
       event_time: JSON.stringify(new Date()),
