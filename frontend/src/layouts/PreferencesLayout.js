@@ -15,7 +15,6 @@ import {
   deleteSCPAvailability,
 } from "../controllers/scp";
 import { format, toZonedTime, fromZonedTime } from "date-fns-tz";
-import axios from "axios";
 import moment from "moment";
 
 const PreferencesLayout = () => {
@@ -144,28 +143,6 @@ const PreferencesLayout = () => {
       .then(async (res) => {
         if (res) {
           setIsSubmitted(true);
-
-          // const config = {
-          //   headers: {
-          //     Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
-          //     "Content-Type": "application/json",
-          //   },
-          // };
-          // Uncomment this section if you need to send the Gupshup callback
-          // const gupshupUrl =
-          //   "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
-          // const payloadData = {
-          //   event_name: "preferences_acknowledgement",
-          //   event_time: JSON.stringify(new Date()),
-          //   user: {
-          //     phone: user.whatsapp_phone_no,
-          //     name: user.name,
-          //   },
-          //   txid: "123",
-          // };
-
-          // let gupRes = await axios.post(gupshupUrl, payloadData, config);
-          // console.log("gupshup res: ", gupRes);
         }
       })
       .catch((err) => {
