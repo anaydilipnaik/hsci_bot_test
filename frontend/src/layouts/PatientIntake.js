@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from "react";
-import HSCI_LOGO from "../assets/hsci_logo.png";
 import CryptoJS from "crypto-js";
 import { useLocation } from "react-router-dom";
-import { TextField, Button, Container, Typography, Box } from "@mui/material";
+import {
+  TextField,
+  Button,
+  Container,
+  Typography,
+  Box,
+  Grid,
+  MenuItem,
+} from "@mui/material";
 import InputMask from "react-input-mask";
 import { createPatient } from "../controllers/patient";
+import { countries } from "../utils/countryCodes";
 
-const secretKey = "hospital-secret"; // Ensure this matches the key used during encryption
+const secretKey = "hospital-secret";
+const countryOptions = countries.map((country) => ({
+  value: country.dial_code,
+  label: `${country.name} (${country.dial_code})`,
+}));
 
 const PatientIntake = () => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     hospital: "",
+    countryCode: "+1",
   });
 
   const [statusMessage, setStatusMessage] = useState({
@@ -50,6 +63,13 @@ const PatientIntake = () => {
     });
   };
 
+  const handleCountryCodeChange = (e) => {
+    setFormData({
+      ...formData,
+      countryCode: e.target.value,
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -57,12 +77,12 @@ const PatientIntake = () => {
     const reformattedPhone = formData.phone.replace(/[^\d]/g, "");
     const formattedData = {
       ...formData,
-      phone: reformattedPhone,
+      phone: `${formData.countryCode}${reformattedPhone}`,
     };
 
     createPatient(
       formattedData.name,
-      formattedData.phone,
+      formattedData.phone.split("+")[1],
       formattedData.hospital
     )
       .then((res) => {
@@ -95,22 +115,36 @@ const PatientIntake = () => {
         alignItems: "center",
         justifyContent: "center",
         height: "100vh",
-        backgroundColor: "#fafafa",
-        padding: "0 20px",
+        backgroundColor: "#f0f4f8",
+        padding: "20px",
+        borderRadius: "8px",
+        boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
       }}
     >
-      <img
-        src={HSCI_LOGO}
-        alt="Logo"
-        style={{ width: "60px", marginBottom: "30px" }}
-      />
       <Typography
         variant="h4"
         gutterBottom
-        sx={{ color: "#444", textAlign: "center" }}
+        sx={{ color: "#d69e2e", textAlign: "center", fontWeight: "bold" }}
       >
-        Welcome to the HSCI Telechaplaincy Patient Intake Page
+        🙏 Welcome to Spiritual Care Seva by HSCI
       </Typography>
+      {!success && (
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{
+            color: "#444",
+            textAlign: "center",
+            fontSize: "16px",
+            marginTop: "20px",
+            marginBottom: "25px",
+          }}
+        >
+          Hindu Spiritual Care Institute (HSCI) is pleased to serve you. Please
+          complete this form, and we will contact you to schedule the virtual
+          visit.
+        </Typography>
+      )}
       {!success ? (
         <Box
           component="form"
@@ -120,6 +154,10 @@ const PatientIntake = () => {
             alignItems: "center",
             width: "100%",
             maxWidth: "400px",
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "8px",
+            boxShadow: "0 0 10px rgba(0, 0, 0, 0.1)",
           }}
           onSubmit={handleSubmit}
         >
@@ -131,22 +169,61 @@ const PatientIntake = () => {
             fullWidth
             margin="normal"
             variant="outlined"
+            required
           />
-          <InputMask
-            mask="+1 (999) 999-9999"
-            value={formData.phone}
-            onChange={handleChange}
+          <Grid
+            container
+            spacing={2}
+            alignItems="center"
+            fullWidth
+            margin="normal"
           >
-            {() => (
+            <Grid item xs={4}>
               <TextField
-                label="Phone (WhatsApp)"
-                name="phone"
-                fullWidth
-                margin="normal"
+                select
+                value={formData.countryCode}
+                onChange={handleCountryCodeChange}
                 variant="outlined"
-              />
-            )}
-          </InputMask>
+                fullWidth
+                sx={{
+                  marginTop: "7px",
+                }}
+                SelectProps={{
+                  MenuProps: {
+                    PaperProps: {
+                      style: {
+                        maxHeight: 200,
+                      },
+                    },
+                  },
+                }}
+              >
+                {countryOptions.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
+            <Grid item xs={8}>
+              <InputMask
+                mask="(999) 999-9999"
+                value={formData.phone}
+                onChange={handleChange}
+              >
+                {() => (
+                  <TextField
+                    label="Phone (WhatsApp)"
+                    name="phone"
+                    fullWidth
+                    margin="normal"
+                    variant="outlined"
+                    required
+                  />
+                )}
+              </InputMask>
+            </Grid>
+          </Grid>
           <TextField
             label="Hospital Name"
             name="hospital"
@@ -174,9 +251,9 @@ const PatientIntake = () => {
             variant="contained"
             sx={{
               mt: 2,
-              backgroundColor: "#007BFF",
+              backgroundColor: "#d69e2e",
               ":hover": {
-                backgroundColor: "#0056b3",
+                backgroundColor: "#b0891e",
               },
             }}
           >
@@ -184,8 +261,9 @@ const PatientIntake = () => {
           </Button>
         </Box>
       ) : (
-        <span
-          style={{
+        <Typography
+          variant="h6"
+          sx={{
             fontSize: "18px",
             fontWeight: "bold",
             color: "green",
@@ -195,7 +273,36 @@ const PatientIntake = () => {
         >
           Your responses have been successfully recorded. We will contact you on
           Whatsapp shortly.
-        </span>
+        </Typography>
+      )}
+      {!success && (
+        <Typography
+          variant="body2"
+          sx={{
+            color: "#444",
+            textAlign: "center",
+            fontSize: "14px",
+            marginTop: "20px",
+            marginBottom: "25px",
+          }}
+        >
+          Hindu Spiritual Care Institute needs the information you provide to us
+          to contact you about our services. You may unsubscribe from these
+          communications at any time. You can review our Privacy Policy{" "}
+          <a
+            href="https://www.hsciglobal.org/privacy-policy.html"
+            target="_BLANK"
+            style={{ color: "#1a73e8" }}
+          >
+            here
+          </a>
+          .
+          <br />
+          <br />
+          By clicking submit, you consent to allow Hindu Spiritual Care
+          Institute to store and process the personal information submitted
+          above.
+        </Typography>
       )}
     </Container>
   );
