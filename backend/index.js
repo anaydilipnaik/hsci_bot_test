@@ -1,54 +1,49 @@
 const express = require("express");
 const { createClient } = require("@supabase/supabase-js");
 const { RealtimeClient } = require("@supabase/realtime-js");
-const axios = require("axios"); // Import Axios
-// const cron = require("node-cron");
+const axios = require("axios");
+const cors = require("cors");
+const jwt = require("jsonwebtoken"); // Import jsonwebtoken
 
 // Initialize the Express app
 const app = express();
 app.use(express.json());
 
-/* CRON JOB STARTS */
-// async function checkAppointments() {
-//   try {
-//     const now = new Date();
-//     const currentDateString = now.toISOString().split("T")[0];
+// Enable CORS for all routes
+app.use(cors());
 
-//     // Fetch appointments with end time matching current date and hour
-//     const { data, error } = await supabase
-//       .from("appointments")
-//       .select("*")
-//       .eq(
-//         "end_time",
-//         `${currentDateString}T${String(now.getHours()).padStart(2, "0")}:00:00Z`
-//       );
+app.post("/acknowledgement", async (req, res, next) => {
+  try {
+    const config = {
+      headers: {
+        Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
+        "Content-Type": "application/json",
+      },
+    };
 
-//     if (error) {
-//       console.error("Error fetching appointments:", error);
-//       return;
-//     }
+    const gupshupUrl =
+      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
 
-//     for (const appointment of data) {
-//       // Trigger post-appointment feedback
-//       postAppointmentFeedback(appointment);
-//     }
-//   } catch (error) {
-//     console.error("Error in checkAppointments:", error);
-//   }
-// }
+    const ackPayloadData = {
+      event_name: "preferences_acknowledgement",
+      event_time: new Date().toISOString(),
+      user: {
+        phone: req.body.whatsapp_phone_no,
+        name: req.body.name,
+      },
+      txid: "123",
+    };
 
-// // Stub function for post-appointment feedback
-// function postAppointmentFeedback(appointment) {
-//   console.log("Triggering post-appointment feedback for:", appointment);
-//   // Add your feedback logic here
-// }
+    console.log("ackPayloadData: ", ackPayloadData);
 
-// // Schedule the cron job to run every hour
-// cron.schedule("0 * * * *", () => {
-//   console.log("Running hourly appointment check");
-//   checkAppointments();
-// });
-/* CRON JOB ENDS */
+    await axios.post(gupshupUrl, ackPayloadData, config);
+
+    res.status(200).json({ message: "success" });
+  } catch (error) {
+    console.error("Error: ", error);
+    res.status(500).send("Something went wrong");
+  }
+});
 
 // Initialize the Supabase client
 const supabaseUrl = "https://anczzwscgxogzohrdbnv.supabase.co";
@@ -204,18 +199,6 @@ async function triggerFunction(payload) {
   const gupshupUrl =
     "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
 
-  const ackPayloadData = {
-    event_name: "preferences_acknowledgement",
-    event_time: JSON.stringify(new Date()),
-    user: {
-      phone: payload.new.whatsapp_phone_no,
-      name: payload.new.name,
-    },
-    txid: "123",
-  };
-
-  await axios.post(gupshupUrl, ackPayloadData, config);
-
   try {
     const { data, error } = await supabase.rpc("find_first_match", {
       given_scp_id: payload.new.id,
@@ -226,6 +209,41 @@ async function triggerFunction(payload) {
     const max = 999999;
     const randomCode = Math.floor(Math.random() * (max - min + 1) + min);
 
+    const tokenPayloadPatient = {
+      context: {
+        user: {
+          name: data.name,
+        },
+      },
+      moderator: true,
+      aud: "jitsi",
+      iss: "QXjoVJbUNbVNEbhsIDKnTfe7RCN",
+      sub: "meet.hsciglobal.org",
+      room: "roundrobin-" + randomCode,
+      exp: 1720071689,
+    };
+
+    const tokenPayloadScp = {
+      context: {
+        user: {
+          name: payload.new.name,
+        },
+      },
+      moderator: true,
+      aud: "jitsi",
+      iss: "QXjoVJbUNbVNEbhsIDKnTfe7RCN",
+      sub: "meet.hsciglobal.org",
+      room: "roundrobin-" + randomCode,
+      exp: 1720071689,
+    };
+
+    // Sign the token with the payload and secret key
+    const tokenPatient = jwt.sign(
+      tokenPayloadPatient,
+      "S7ksAUnc1IXbXP47Ky2GMgB9QMP"
+    );
+    const tokenScp = jwt.sign(tokenPayloadScp, "S7ksAUnc1IXbXP47Ky2GMgB9QMP");
+
     const insertResult = await supabase
       .from("appointments")
       .insert([
@@ -234,7 +252,16 @@ async function triggerFunction(payload) {
           patient_id: data.scp_id,
           meeting_date: data.date,
           meeting_time: data.start_time + "-" + data.end_time,
-          meeting_link: "https://meet.hsciglobal.org/roundrobin/" + randomCode,
+          meeting_link_patient:
+            "https://meet.hsciglobal.org/roundrobin-" +
+            randomCode +
+            "?jwt=" +
+            tokenPatient,
+          meeting_link_scp:
+            "https://meet.hsciglobal.org/roundrobin-" +
+            randomCode +
+            "?jwt=" +
+            tokenScp,
           patient_phone: payload.new.whatsapp_phone_no,
           scp_phone: data.phone,
           status: "DRAFT",
@@ -261,7 +288,11 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: "https://meet.hsciglobal.org/" + randomCode,
+        meeting_link:
+          "https://meet.hsciglobal.org/roundrobin-" +
+          randomCode +
+          "?jwt=" +
+          tokenPatient,
         appointment_id: newAppointmentId,
       },
       txid: "123",
@@ -280,7 +311,11 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: "https://meet.hsciglobal.org/" + randomCode,
+        meeting_link:
+          "https://meet.hsciglobal.org/roundrobin-" +
+          randomCode +
+          "?jwt=" +
+          tokenScp,
       },
       txid: "123",
     };
