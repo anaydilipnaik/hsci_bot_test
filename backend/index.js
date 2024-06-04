@@ -212,7 +212,7 @@ async function triggerFunction(payload) {
     const tokenPayloadPatient = {
       context: {
         user: {
-          name: data.name,
+          name: payload.new.name,
         },
       },
       moderator: true,
@@ -226,7 +226,7 @@ async function triggerFunction(payload) {
     const tokenPayloadScp = {
       context: {
         user: {
-          name: payload.new.name,
+          name: data.name,
         },
       },
       moderator: true,
@@ -288,11 +288,7 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link:
-          "https://meet.hsciglobal.org/roundrobin-" +
-          randomCode +
-          "?jwt=" +
-          tokenPatient,
+        meeting_link: insertResult.data[0].meeting_link_patient,
         appointment_id: newAppointmentId,
       },
       txid: "123",
@@ -311,11 +307,7 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link:
-          "https://meet.hsciglobal.org/roundrobin-" +
-          randomCode +
-          "?jwt=" +
-          tokenScp,
+        meeting_link: insertResult.data[0].meeting_link_scp,
       },
       txid: "123",
     };
