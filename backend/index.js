@@ -221,6 +221,7 @@ async function triggerFunction(payload) {
       sub: "meet.hsciglobal.org",
       room: "roundrobin-" + randomCode,
       exp: 1720071689,
+      defaultUrl: "https://www.google.com",
     };
 
     const tokenPayloadScp = {
@@ -235,6 +236,7 @@ async function triggerFunction(payload) {
       sub: "meet.hsciglobal.org",
       room: "roundrobin-" + randomCode,
       exp: 1720071689,
+      defaultUrl: "https://www.google.com",
     };
 
     // Sign the token with the payload and secret key
