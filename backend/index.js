@@ -205,9 +205,7 @@ async function triggerFunction(payload) {
     });
     if (error) throw error;
 
-    const min = 100000;
-    const max = 999999;
-    const randomCode = Math.floor(Math.random() * (max - min + 1) + min);
+    const uniqueCode = new Date().getTime();
 
     const tokenPayloadPatient = {
       context: {
@@ -219,9 +217,8 @@ async function triggerFunction(payload) {
       aud: "jitsi",
       iss: "QXjoVJbUNbVNEbhsIDKnTfe7RCN",
       sub: "meet.hsciglobal.org",
-      room: "roundrobin-" + randomCode,
+      room: "roundrobin",
       exp: 1720071689,
-      defaultUrl: "https://www.google.com",
     };
 
     const tokenPayloadScp = {
@@ -234,9 +231,8 @@ async function triggerFunction(payload) {
       aud: "jitsi",
       iss: "QXjoVJbUNbVNEbhsIDKnTfe7RCN",
       sub: "meet.hsciglobal.org",
-      room: "roundrobin-" + randomCode,
+      room: "roundrobin",
       exp: 1720071689,
-      defaultUrl: "https://www.google.com",
     };
 
     // Sign the token with the payload and secret key
@@ -246,6 +242,14 @@ async function triggerFunction(payload) {
     );
     const tokenScp = jwt.sign(tokenPayloadScp, "S7ksAUnc1IXbXP47Ky2GMgB9QMP");
 
+    const meetingLinkPatient = {
+      [`room=${uniqueCode}`]: `room=roundrobin&jwt=${tokenPatient}`,
+    };
+
+    const meetingLinkScp = {
+      [`room=${uniqueCode}`]: `room=roundrobin&jwt=${tokenScp}`,
+    };
+
     const insertResult = await supabase
       .from("appointments")
       .insert([
@@ -254,16 +258,8 @@ async function triggerFunction(payload) {
           patient_id: data.scp_id,
           meeting_date: data.date,
           meeting_time: data.start_time + "-" + data.end_time,
-          meeting_link_patient:
-            "https://meet.hsciglobal.org/roundrobin-" +
-            randomCode +
-            "?jwt=" +
-            tokenPatient,
-          meeting_link_scp:
-            "https://meet.hsciglobal.org/roundrobin-" +
-            randomCode +
-            "?jwt=" +
-            tokenScp,
+          meeting_link_patient: meetingLinkPatient,
+          meeting_link_scp: meetingLinkScp,
           patient_phone: payload.new.whatsapp_phone_no,
           scp_phone: data.phone,
           status: "DRAFT",
