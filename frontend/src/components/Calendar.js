@@ -22,8 +22,6 @@ const CalendarComponent = ({
   const scrollToTime = new Date();
   scrollToTime.setHours(8, 0, 0, 0); // Set the scroll to 8 AM
 
-  console.log("events: ", events);
-
   return (
     <>
       <Sidebar setIsNext={setIsNext} handleSubmit={handleSubmit} />

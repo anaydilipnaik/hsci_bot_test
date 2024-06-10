@@ -276,6 +276,13 @@ async function triggerFunction(payload) {
     console.log("insertResult: ", insertResult);
     console.log("Insert successful, new appointment ID:", newAppointmentId);
 
+    const meetingLinkKeyPatient = Object.keys(
+      insertResult.data[0].meeting_link_patient
+    )[0];
+    const meetingLinkKeyScp = Object.keys(
+      insertResult.data[0].meeting_link_scp
+    )[0];
+
     // Gupshup callback URL and payload data
     const payloadDataPatient = {
       event_name: "appointment_details",
@@ -287,7 +294,7 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: insertResult.data[0].meeting_link_patient,
+        meeting_link: meetingLinkKeyPatient,
         appointment_id: newAppointmentId,
       },
       txid: "123",
@@ -306,7 +313,7 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: insertResult.data[0].meeting_link_scp,
+        meeting_link: meetingLinkKeyScp,
       },
       txid: "123",
     };
