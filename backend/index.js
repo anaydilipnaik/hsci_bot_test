@@ -205,7 +205,8 @@ async function triggerFunction(payload) {
     });
     if (error) throw error;
 
-    const uniqueCode = new Date().getTime();
+    const uniqueCodePatient = 1 + new Date().getTime();
+    const uniqueCodeScp = new Date().getTime() + 1;
 
     const tokenPayloadPatient = {
       context: {
@@ -243,11 +244,11 @@ async function triggerFunction(payload) {
     const tokenScp = jwt.sign(tokenPayloadScp, "S7ksAUnc1IXbXP47Ky2GMgB9QMP");
 
     const meetingLinkPatient = {
-      [`room=${uniqueCode}`]: `room=roundrobin&jwt=${tokenPatient}`,
+      [`room=${uniqueCodePatient}`]: `room=roundrobin&jwt=${tokenPatient}`,
     };
 
     const meetingLinkScp = {
-      [`room=${uniqueCode}`]: `room=roundrobin&jwt=${tokenScp}`,
+      [`room=${uniqueCodeScp}`]: `room=roundrobin&jwt=${tokenScp}`,
     };
 
     const insertResult = await supabase
