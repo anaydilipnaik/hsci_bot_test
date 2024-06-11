@@ -319,7 +319,7 @@ async function triggerFunction(payload) {
         meeting_link:
           "http://trayaschedule.hsciglobal.org/meeting?" +
           meetingLinkKeyScp +
-          "&role=patient",
+          "&role=scp",
       },
       txid: "123",
     };
