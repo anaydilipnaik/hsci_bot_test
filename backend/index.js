@@ -294,7 +294,10 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: meetingLinkKeyPatient,
+        meeting_link:
+          "http://trayaschedule.hsciglobal.org/meeting?" +
+          meetingLinkKeyPatient +
+          "&role=patient",
         appointment_id: newAppointmentId,
       },
       txid: "123",
@@ -313,7 +316,10 @@ async function triggerFunction(payload) {
         meeting_date: formatDate(data.date),
         meeting_time:
           formatTime(data.start_time) + "-" + formatTime(data.end_time),
-        meeting_link: meetingLinkKeyScp,
+        meeting_link:
+          "http://trayaschedule.hsciglobal.org/meeting?" +
+          meetingLinkKeyScp +
+          "&role=patient",
       },
       txid: "123",
     };

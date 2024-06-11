@@ -35,8 +35,6 @@ const JitsiMeetComponent = () => {
           .from("appointments")
           .select(`id, ${columnName}`);
 
-        console.log("data: ", data);
-
         if (error) {
           console.error("Error fetching data from Supabase:", error);
         } else if (data && data.length > 0) {
