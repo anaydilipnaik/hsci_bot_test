@@ -69,12 +69,7 @@ const JitsiMeetComponent = () => {
 
   const handleApiReady = (apiObj) => {
     apiRef.current = apiObj;
-    apiRef.current.on("participantLeft", handleParticipantLeft);
     apiRef.current.on("readyToClose", handleReadyToClose);
-  };
-
-  const handleParticipantLeft = (payload) => {
-    console.log("Participant left:", payload);
   };
 
   const handleReadyToClose = () => {
@@ -96,17 +91,13 @@ const JitsiMeetComponent = () => {
             userInfo: {
               displayName: userName,
             },
-            startWithAudioMuted: false, // Ensure audio is not muted by default
-            startWithVideoMuted: false, // Ensure video is not muted by default
           }}
           interfaceConfigOverwrite={{
             filmStripOnly: false,
             SHOW_JITSI_WATERMARK: false,
             SHOW_BRAND_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
-            TILE_VIEW_MAX_COLUMNS: 2, // Set the number of columns for tile view
-            DEFAULT_REMOTE_DISPLAY_NAME: "Fellow Jitster",
-            TILE_VIEW: true, // Enable tile view by default
+            TILE_VIEW: true,
           }}
           onApiReady={handleApiReady}
           onReadyToClose={handleReadyToClose}
