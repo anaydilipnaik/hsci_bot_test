@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode"; // Remove curly braces
 import { supabase } from "../utils/supabase";
 import { JitsiMeeting } from "@jitsi/react-sdk";
 
@@ -96,12 +96,17 @@ const JitsiMeetComponent = () => {
             userInfo: {
               displayName: userName,
             },
+            startWithAudioMuted: false, // Ensure audio is not muted by default
+            startWithVideoMuted: false, // Ensure video is not muted by default
           }}
           interfaceConfigOverwrite={{
             filmStripOnly: false,
             SHOW_JITSI_WATERMARK: false,
             SHOW_BRAND_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
+            TILE_VIEW_MAX_COLUMNS: 2, // Set the number of columns for tile view
+            DEFAULT_REMOTE_DISPLAY_NAME: "Fellow Jitster",
+            TILE_VIEW: true, // Enable tile view by default
           }}
           onApiReady={handleApiReady}
           onReadyToClose={handleReadyToClose}
