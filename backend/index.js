@@ -16,13 +16,13 @@ app.post("/acknowledgement", async (req, res, next) => {
   try {
     const config = {
       headers: {
-        Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
+        Authorization: "fa2fed37-42f1-4d9c-b889-f52984dc03a4",
         "Content-Type": "application/json",
       },
     };
 
     const gupshupUrl =
-      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
+      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/187b1a89156f3c87982a83954";
 
     const ackPayloadData = {
       event_name: "preferences_acknowledgement",
