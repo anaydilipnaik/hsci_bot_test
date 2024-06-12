@@ -5,6 +5,11 @@ const axios = require("axios");
 const cors = require("cors");
 const jwt = require("jsonwebtoken"); // Import jsonwebtoken
 
+// imports for SSL certificate
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
+
 // Initialize the Express app
 const app = express();
 app.use(express.json());
@@ -12,31 +17,98 @@ app.use(express.json());
 // Enable CORS for all routes
 app.use(cors());
 
-app.post("/acknowledgement", async (req, res, next) => {
+// SSL CONFIG CODE STARTS HERE
+
+// Path to SSL certificate files
+const sslOptions = {
+  key: fs.readFileSync(path.resolve(__dirname, "../certificates/private.key")),
+  cert: fs.readFileSync(
+    path.resolve(__dirname, "../certificates/trayaschedule_hsciglobal_org.crt")
+  ),
+  ca: fs.readFileSync(
+    path.resolve(
+      __dirname,
+      "../certificates/trayaschedule_hsciglobal_org.ca-bundle"
+    )
+  ),
+};
+
+// Redirect HTTP to HTTPS
+app.use((req, res, next) => {
+  if (!req.secure) {
+    return res.redirect("https://" + req.headers.host + req.url);
+  }
+  next();
+});
+
+// Serve static files from React build
+app.use(express.static(path.join(__dirname, "build")));
+
+// Handle React routing, return all requests to React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build", "index.html"));
+});
+
+// SSL CONFIG CODE ENDS HERE
+
+// app.post("/acknowledgement", async (req, res, next) => {
+//   try {
+//     const config = {
+//       headers: {
+//         Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
+//         "Content-Type": "application/json",
+//       },
+//     };
+
+//     const gupshupUrl =
+//       "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
+
+//     const ackPayloadData = {
+//       event_name: "preferences_acknowledgement",
+//       event_time: new Date().toISOString(),
+//       user: {
+//         phone: req.body.whatsapp_phone_no,
+//         name: req.body.name,
+//       },
+//       txid: "123",
+//     };
+
+//     console.log("ackPayloadData: ", ackPayloadData);
+
+//     await axios.post(gupshupUrl, ackPayloadData, config);
+
+//     res.status(200).json({ message: "success" });
+//   } catch (error) {
+//     console.error("Error: ", error);
+//     res.status(500).send("Something went wrong");
+//   }
+// });
+
+app.post("/feedback-loop", async (req, res, next) => {
   try {
     const config = {
       headers: {
-        Authorization: "bc9261c7-2d89-4415-a439-a98609b58fc8",
+        Authorization: "ed048b5b-2dd7-491c-a8e5-3ababf728e5f",
         "Content-Type": "application/json",
       },
     };
 
     const gupshupUrl =
-      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/137b1758102d899b5f9d308e0";
+      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/1f71128216413333213086552";
 
-    const ackPayloadData = {
-      event_name: "preferences_acknowledgement",
+    const feedbackPayload = {
+      event_name: "feedback_loop",
       event_time: new Date().toISOString(),
       user: {
         phone: req.body.whatsapp_phone_no,
         name: req.body.name,
       },
-      txid: "123",
+      txid: "456",
     };
 
-    console.log("ackPayloadData: ", ackPayloadData);
+    console.log("feedbackPayload: ", feedbackPayload);
 
-    await axios.post(gupshupUrl, ackPayloadData, config);
+    await axios.post(gupshupUrl, feedbackPayload, config);
 
     res.status(200).json({ message: "success" });
   } catch (error) {
@@ -205,8 +277,8 @@ async function triggerFunction(payload) {
     });
     if (error) throw error;
 
-    const uniqueCodePatient = 1 + new Date().getTime();
-    const uniqueCodeScp = new Date().getTime() + 1;
+    const uniqueCodePatient = new Date().getTime();
+    const uniqueCodeScp = new Date().getTime();
 
     const tokenPayloadPatient = {
       context: {
@@ -329,6 +401,24 @@ async function triggerFunction(payload) {
     console.error("Error in trigger function:", err.message);
   }
 }
+
+// Create HTTPS server
+https.createServer(sslOptions, app).listen(443, () => {
+  console.log("HTTPS Server running on port 443");
+});
+
+// Optionally create an HTTP server to redirect to HTTPS
+const http = require("http");
+http
+  .createServer((req, res) => {
+    res.writeHead(301, {
+      Location: "https://" + req.headers["host"] + req.url,
+    });
+    res.end();
+  })
+  .listen(80, () => {
+    console.log("HTTP Server running on port 80 and redirecting to HTTPS");
+  });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
