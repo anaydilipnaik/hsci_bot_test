@@ -16,6 +16,7 @@ import {
 } from "../controllers/scp";
 import { format, toZonedTime, fromZonedTime } from "date-fns-tz";
 import moment from "moment";
+import axios from "axios";
 
 const PreferencesLayout = () => {
   const [selectedTimeZone, setSelectedTimeZone] = useState(moment.tz.guess());
@@ -143,11 +144,27 @@ const PreferencesLayout = () => {
       .then(async (res) => {
         if (res) {
           setIsSubmitted(true);
+          sendAcknowledgement(user.whatsapp_phone_no, user.name);
         }
       })
       .catch((err) => {
         console.error(err);
       });
+  };
+
+  const sendAcknowledgement = async (phone, name) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:3001/acknowledgement",
+        {
+          whatsapp_phone_no: phone,
+          name: name,
+        }
+      );
+      console.log("Response from server:", response.data);
+    } catch (error) {
+      console.error("Error sending acknowledgement:", error);
+    }
   };
 
   useEffect(() => {
@@ -199,16 +216,9 @@ const PreferencesLayout = () => {
   };
 
   useEffect(() => {
-    console.log("<------WE ARE HERE IN USEEFFECT------->");
-    console.log("Timezone changed to:", selectedTimeZone);
-    console.log("Original events:", events);
-
     const updatedEvents = events.map((event) => {
       let convertedStart = toZonedTime(event.start, selectedTimeZone);
       let convertedEnd = toZonedTime(event.end, selectedTimeZone);
-
-      console.log("convertedStart: ", convertedStart);
-      console.log("convertedEnd: ", convertedEnd);
 
       return {
         ...event,
@@ -217,7 +227,6 @@ const PreferencesLayout = () => {
       };
     });
 
-    console.log("Updated events:", updatedEvents);
     setEvents2(updatedEvents);
   }, [selectedTimeZone, events]);
 
