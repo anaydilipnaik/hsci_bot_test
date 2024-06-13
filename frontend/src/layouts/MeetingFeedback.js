@@ -24,7 +24,7 @@ const MeetingFeedback = () => {
   const triggerFeedback = async (data) => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/feedback-loop",
+        "http://35.173.132.187:3001/feedback-loop",
         data
       );
       console.log("Response from server:", response.data);
