@@ -3,7 +3,7 @@ const { createClient } = require("@supabase/supabase-js");
 const { RealtimeClient } = require("@supabase/realtime-js");
 const axios = require("axios");
 const cors = require("cors");
-const jwt = require("jsonwebtoken"); // Import jsonwebtoken
+const jwt = require("jsonwebtoken");
 
 // Initialize the Express app
 const app = express();
@@ -33,8 +33,6 @@ app.post("/acknowledgement", async (req, res, next) => {
       },
       txid: "123",
     };
-
-    console.log("ackPayloadData: ", ackPayloadData);
 
     await axios.post(gupshupUrl, ackPayloadData, config);
 
@@ -331,7 +329,7 @@ async function triggerFunction(payload) {
         meeting_link:
           "http://trayaschedule.hsciglobal.org/meeting?" +
           meetingLinkKeyPatient +
-          "&role=patient",
+          "&role=p",
         appointment_id: newAppointmentId,
       },
       txid: "123",
@@ -353,7 +351,7 @@ async function triggerFunction(payload) {
         meeting_link:
           "http://trayaschedule.hsciglobal.org/meeting?" +
           meetingLinkKeyScp +
-          "&role=scp",
+          "&role=s",
       },
       txid: "123",
     };

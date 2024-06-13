@@ -20,9 +20,9 @@ const JitsiMeetComponent = () => {
 
       if (key && role) {
         let columnName;
-        if (role === "patient") {
+        if (role === "p") {
           columnName = "meeting_link_patient";
-        } else if (role === "scp") {
+        } else if (role === "s") {
           columnName = "meeting_link_scp";
         } else {
           console.error("Invalid role specified in the URL");
