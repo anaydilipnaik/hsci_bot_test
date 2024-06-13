@@ -39,7 +39,7 @@ const MeetingFeedback = () => {
     let dataJson = {
       name: role === "p" ? res.patient.name : res.scp.name,
       whatsapp_phone_no: role === "p" ? res.patient_phone : res.scp_phone,
-      appointmentId: res.id,
+      appointment_id: res.id,
     };
 
     await triggerFeedback(dataJson);
