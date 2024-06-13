@@ -287,8 +287,8 @@ async function triggerFunction(payload) {
       .from("appointments")
       .insert([
         {
-          scp_id: payload.new.id,
-          patient_id: data.scp_id,
+          scp_id: data.scp_id,
+          patient_id: payload.new.id,
           meeting_date: data.date,
           meeting_time: data.start_time + "-" + data.end_time,
           meeting_link_patient: meetingLinkPatient,

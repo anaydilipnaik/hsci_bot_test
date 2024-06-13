@@ -10,6 +10,7 @@ const JitsiMeetComponent = () => {
   const [roomName, setRoomName] = useState("");
   const [userName, setUserName] = useState("");
   const [appointmentId, setAppointmentId] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -17,6 +18,7 @@ const JitsiMeetComponent = () => {
       const params = new URLSearchParams(location.search);
       const key = "room=" + params.get("room");
       const role = params.get("role");
+      setUserRole(role);
 
       if (key && role) {
         let columnName;
@@ -74,7 +76,8 @@ const JitsiMeetComponent = () => {
   const handleReadyToClose = () => {
     console.log("Participant has left the meeting.");
     alert("You have left the meeting. Redirecting...");
-    window.location.href = "/meeting-feedback?appt=" + appointmentId;
+    window.location.href =
+      "/meeting-feedback?appt=" + appointmentId + "&role=" + userRole;
   };
 
   return (
