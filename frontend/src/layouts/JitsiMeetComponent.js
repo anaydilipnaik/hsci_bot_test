@@ -9,6 +9,7 @@ const JitsiMeetComponent = () => {
   const [token, setToken] = useState(null);
   const [roomName, setRoomName] = useState("");
   const [userName, setUserName] = useState("");
+  const [appointmentId, setAppointmentId] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -16,9 +17,6 @@ const JitsiMeetComponent = () => {
       const params = new URLSearchParams(location.search);
       const key = "room=" + params.get("room");
       const role = params.get("role");
-
-      console.log("key: ", key);
-      console.log("role: ", role);
 
       if (key && role) {
         let columnName;
@@ -40,6 +38,7 @@ const JitsiMeetComponent = () => {
         } else if (data && data.length > 0) {
           // Find the row where the JSON column contains the key
           const row = data.find((row) => row[columnName][key]);
+          setAppointmentId(row.id);
 
           if (row) {
             const meetingLink = row[columnName][key]; // Get the value for the specified key
@@ -75,7 +74,7 @@ const JitsiMeetComponent = () => {
   const handleReadyToClose = () => {
     console.log("Participant has left the meeting.");
     alert("You have left the meeting. Redirecting...");
-    window.location.href = "/meeting-feedback";
+    window.location.href = "/meeting-feedback?appt=" + appointmentId;
   };
 
   return (
