@@ -63,6 +63,7 @@ app.post("/feedback-loop", async (req, res, next) => {
         name: req.body.name,
         appointment_id: req.body.appointment_id,
         role_type: req.body.role_type,
+        matched_name: req.body.matched_name,
       },
       txid: "456",
     };
