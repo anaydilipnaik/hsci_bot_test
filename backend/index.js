@@ -62,6 +62,7 @@ app.post("/feedback-loop", async (req, res, next) => {
         phone: req.body.whatsapp_phone_no,
         name: req.body.name,
         appointment_id: req.body.appointment_id,
+        role_type: req.body.role_type,
       },
       txid: "456",
     };
