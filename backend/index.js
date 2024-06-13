@@ -44,6 +44,7 @@ app.post("/acknowledgement", async (req, res, next) => {
 });
 
 app.post("/feedback-loop", async (req, res, next) => {
+  console.log("IN FEEDBACK LOOP: ", req.body);
   try {
     const config = {
       headers: {
