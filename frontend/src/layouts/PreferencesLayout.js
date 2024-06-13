@@ -155,7 +155,7 @@ const PreferencesLayout = () => {
   const sendAcknowledgement = async (phone, name) => {
     try {
       const response = await axios.post(
-        "http://localhost:3001/acknowledgement",
+        "https://backend.trayaschedule.hsciglobal.org/acknowledgement",
         {
           whatsapp_phone_no: phone,
           name: name,
