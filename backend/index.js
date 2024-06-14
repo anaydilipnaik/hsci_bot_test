@@ -44,7 +44,9 @@ app.post("/acknowledgement", async (req, res, next) => {
 });
 
 app.get("/", async (req, res, next) => {
-  console.log("ROOT ROUTE for backend.trayacare.hsciglobal.org");
+  res
+    .status(200)
+    .json({ message: "ROOT ROUTE for backend.trayacare.hsciglobal.org" });
 });
 
 app.post("/feedback-loop", async (req, res, next) => {
