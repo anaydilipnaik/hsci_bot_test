@@ -71,18 +71,46 @@ const JitsiMeetComponent = () => {
   const handleApiReady = (apiObj) => {
     apiRef.current = apiObj;
     apiRef.current.on("readyToClose", handleReadyToClose);
+    apiRef.current.on("videoConferenceJoined", () => {
+      // Ensure the tile view is toggled when the user joins the conference
+      setTimeout(() => {
+        apiRef.current.executeCommand("toggleTileView");
+      }, 1000); // Adjust the delay if needed
+    });
   };
 
   const handleReadyToClose = () => {
     console.log("Participant has left the meeting.");
-    alert("You have left the meeting. Redirecting...");
     window.location.href =
       "/meeting-feedback?appt=" + appointmentId + "&role=" + userRole;
   };
 
+  const Spinner = () => {
+    return (
+      <div style={spinnerStyle}>
+        <div style={spinnerInnerStyle}></div>
+      </div>
+    );
+  };
+
+  const spinnerStyle = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "100vh",
+  };
+
+  const spinnerInnerStyle = {
+    width: "40px",
+    height: "40px",
+    border: "5px solid rgba(0, 0, 0, 0.1)",
+    borderTop: "5px solid #3498db",
+    borderRadius: "50%",
+    animation: "spin 1s linear infinite",
+  };
+
   return (
     <div style={{ width: "100%", height: "100vh" }}>
-      <h1 style={{ textAlign: "center" }}>Jitsi Meeting</h1>
       {token && roomName ? (
         <JitsiMeeting
           domain="meet.hsciglobal.org"
@@ -99,10 +127,8 @@ const JitsiMeetComponent = () => {
             SHOW_JITSI_WATERMARK: false,
             SHOW_BRAND_WATERMARK: false,
             SHOW_WATERMARK_FOR_GUESTS: false,
-            TILE_VIEW: true,
           }}
           onApiReady={handleApiReady}
-          onReadyToClose={handleReadyToClose}
           getIFrameRef={(iframeRef) => {
             iframeRef.style.position = "fixed";
             iframeRef.style.top = "0";
@@ -111,9 +137,10 @@ const JitsiMeetComponent = () => {
             iframeRef.style.height = "100%";
             iframeRef.style.border = "none";
           }}
+          loadingComponent={Spinner} // Use the custom spinner
         />
       ) : (
-        <p>Loading...</p>
+        <Spinner /> // Display the spinner while loading
       )}
     </div>
   );
