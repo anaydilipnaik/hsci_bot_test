@@ -366,7 +366,7 @@ async function triggerFunction(payload) {
       txid: "123",
     };
 
-    // await axios.post(gupshupUrl, payloadDataScp, config);
+    await axios.post(gupshupUrl, payloadDataScp, config);
   } catch (err) {
     console.error("Error in trigger function:", err.message);
   }
