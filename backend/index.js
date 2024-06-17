@@ -248,6 +248,7 @@ async function triggerFunction(payload) {
 
     const uniqueCodePatient = new Date().getTime();
     const uniqueCodeScp = new Date().getTime();
+    const uniqueCodeRoom = new Date().getTime();
 
     const tokenPayloadPatient = {
       context: {
@@ -259,7 +260,7 @@ async function triggerFunction(payload) {
       aud: "jitsi",
       iss: "QXjoVJbUNbVNEbhsIDKnTfe7RCN",
       sub: "meet.hsciglobal.org",
-      room: "roundrobin",
+      room: "roundrobin-" + uniqueCodeRoom,
       exp: 1720071689,
     };
 
@@ -273,7 +274,7 @@ async function triggerFunction(payload) {
       aud: "jitsi",
       iss: "QXjoVJbUNbVNEbhsIDKnTfe7RCN",
       sub: "meet.hsciglobal.org",
-      room: "roundrobin",
+      room: "roundrobin-" + uniqueCodeRoom,
       exp: 1720071689,
     };
 
@@ -285,11 +286,11 @@ async function triggerFunction(payload) {
     const tokenScp = jwt.sign(tokenPayloadScp, "S7ksAUnc1IXbXP47Ky2GMgB9QMP");
 
     const meetingLinkPatient = {
-      [`room=${uniqueCodePatient}`]: `room=roundrobin&jwt=${tokenPatient}`,
+      [`room=${uniqueCodePatient}`]: `room=roundrobin-${uniqueCodeRoom}&jwt=${tokenPatient}`,
     };
 
     const meetingLinkScp = {
-      [`room=${uniqueCodeScp}`]: `room=roundrobin&jwt=${tokenScp}`,
+      [`room=${uniqueCodeScp}`]: `room=roundrobin-${uniqueCodeRoom}&jwt=${tokenScp}`,
     };
 
     const insertResult = await supabase
@@ -365,7 +366,7 @@ async function triggerFunction(payload) {
       txid: "123",
     };
 
-    await axios.post(gupshupUrl, payloadDataScp, config);
+    // await axios.post(gupshupUrl, payloadDataScp, config);
   } catch (err) {
     console.error("Error in trigger function:", err.message);
   }
