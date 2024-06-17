@@ -5,7 +5,6 @@ import LanguagePreferences from "../components/LanguagePreferences";
 import ServicePreferences from "../components/ServicePreferences";
 import { getSCPByPhone } from "../controllers/scp";
 import { useUser } from "../contexts/userContext";
-import { decryptPhone } from "../utils/decryptPhoneNumber";
 import "./PreferencesLayout.css";
 import CalendarComponent from "../components/Calendar";
 import {
@@ -17,6 +16,7 @@ import {
 import { format, toZonedTime, fromZonedTime } from "date-fns-tz";
 import moment from "moment";
 import axios from "axios";
+import { supabase } from "../utils/supabase";
 
 const PreferencesLayout = () => {
   const [selectedTimeZone, setSelectedTimeZone] = useState(moment.tz.guess());
@@ -167,34 +167,47 @@ const PreferencesLayout = () => {
     }
   };
 
-  useEffect(() => {
+  const verifyUser = async () => {
     const params = queryString.parse(location.search);
 
-    if (params.phone) {
-      let phoneTemp = params.phone
-        .toString()
-        .replace("xMl3Jk", "+")
-        .replace("Por21Ld", "/")
-        .replace("Ml32", "=");
+    if (params.id) {
+      const columnName = "preferences_link";
+      const { data, error } = await supabase
+        .from("scp")
+        .select(`id, ${columnName}`);
 
-      getSCPByPhone(decryptPhone(phoneTemp)).then((res) => {
-        setUser(res);
+      if (error) {
+        console.error("Error fetching data from Supabase:", error);
+      } else if (data && data.length > 0) {
+        // Find the row where the JSON column contains the key
+        const row = data.find((row) => row[columnName][params.id]);
 
-        if (res) {
-          const languageUpdates = {};
-          res.languages_spoken.forEach((lang) => {
-            languageUpdates[lang.toLowerCase()] = true;
+        if (row) {
+          getSCPByPhone(row[columnName][params.id]).then((res) => {
+            setUser(res);
+            if (res) {
+              const languageUpdates = {};
+              res.languages_spoken.forEach((lang) => {
+                languageUpdates[lang.toLowerCase()] = true;
+              });
+              setPreferences((prev) => ({ ...prev, ...languageUpdates }));
+
+              const serviceUpdates = {};
+              res.services_offered.forEach((service) => {
+                serviceUpdates[service] = true;
+              });
+              setServices((prev) => ({ ...prev, ...serviceUpdates }));
+            }
           });
-          setPreferences((prev) => ({ ...prev, ...languageUpdates }));
-
-          const serviceUpdates = {};
-          res.services_offered.forEach((service) => {
-            serviceUpdates[service] = true;
-          });
-          setServices((prev) => ({ ...prev, ...serviceUpdates }));
+        } else {
+          console.error("Key not found in any row's JSON object");
         }
-      });
+      }
     }
+  };
+
+  useEffect(() => {
+    verifyUser();
   }, [location, setUser]);
 
   const getAvailability = async () => {
