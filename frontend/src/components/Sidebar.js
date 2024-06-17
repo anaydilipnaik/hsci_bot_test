@@ -1,5 +1,4 @@
 import React from "react";
-import moment from "moment-timezone";
 
 const Sidebar = ({ setIsNext, handleSubmit }) => {
   return (
@@ -9,11 +8,21 @@ const Sidebar = ({ setIsNext, handleSubmit }) => {
           e.preventDefault();
           setIsNext(false);
         }}
-        style={{ marginRight: "auto", background: "grey" }}
+        style={{
+          marginRight: "auto",
+          background: "grey",
+          fontFamily: "Arial, sans-serif",
+        }}
       >
         Go back
       </button>
-      <button onClick={handleSubmit} style={{ marginLeft: "auto" }}>
+      <button
+        onClick={handleSubmit}
+        style={{
+          marginLeft: "auto",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
         Submit
       </button>
     </div>

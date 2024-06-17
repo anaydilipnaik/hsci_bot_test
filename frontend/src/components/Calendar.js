@@ -52,6 +52,7 @@ const CalendarComponent = ({
               marginRight: "10px",
               display: "inline-block",
               verticalAlign: "middle",
+              fontFamily: "Arial, sans-serif",
             }}
           >
             Select Timezone:
@@ -74,7 +75,13 @@ const CalendarComponent = ({
             onBlur={(e) => (e.target.style.borderColor = "#ccc")}
           >
             {timezones.map((tz) => (
-              <option key={tz} value={tz}>
+              <option
+                key={tz}
+                value={tz}
+                style={{
+                  fontFamily: "Arial, sans-serif",
+                }}
+              >
                 {tz}
               </option>
             ))}

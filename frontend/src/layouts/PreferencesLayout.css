@@ -29,6 +29,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Subtle shadow for depth */
   margin: 10px 15px; /* Ensure it doesn’t stick to the edges */
   display: block; /* Better block display */
+  font-family: "Arial", sans-serif;
 }
 
 /* Custom styles for mobile view */
@@ -220,3 +221,23 @@ input:checked + .slider:before {
   background-color: #e2e2e5;
   border-color: #45a049; 
 }
+
+/* CustomCalendar.css */
+.rbc-calendar,
+.rbc-toolbar,
+.rbc-toolbar button,
+.rbc-toolbar-label,
+.rbc-header,
+.rbc-header * , /* Target all elements inside rbc-header */
+.rbc-timeslot-group,
+.rbc-time-slot,
+.rbc-day-slot .rbc-time-slot,
+.rbc-event,
+.rbc-current-time-indicator,
+.rbc-selected-cell,
+.rbc-slot-selection,
+.rbc-tooltip {
+    font-family: Arial, sans-serif;
+}
+
+
