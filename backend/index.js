@@ -14,18 +14,10 @@ app.use(cors());
 
 app.post("/voice", (req, res) => {
   const message = req.body;
+  console.log("message: ", message);
 
-  // Check if the message contains a voice note
-  if (message.type === "audio") {
-    const voiceNoteUrl = message.media.url; // Extract voice note URL
-    const voiceNoteId = message.media.id; // Extract voice note ID
-
-    // (Optional) Send a confirmation to the user
+  if (message.voiceNoteUrl) {
     res.json({ message: "Voice note received!" });
-
-    // TODO:
-    // 1. Download the voice note file using 'voiceNoteUrl' or 'voiceNoteId'.
-    // 2. Store the voice note file in your desired location.
   } else {
     res.json({ message: "No voice note found." });
   }
