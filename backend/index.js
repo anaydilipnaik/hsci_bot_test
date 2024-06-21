@@ -11,6 +11,7 @@ app.use(express.json());
 
 // Enable CORS for all routes
 app.use(cors());
+require("dotenv").config();
 
 const AWS = require("aws-sdk");
 const fs = require("fs");
