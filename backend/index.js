@@ -12,12 +12,142 @@ app.use(express.json());
 // Enable CORS for all routes
 app.use(cors());
 
-app.post("/voice", (req, res) => {
+const AWS = require("aws-sdk");
+const fs = require("fs");
+const path = require("path");
+
+// Configure AWS SDK
+AWS.config.update({
+  accessKeyId: process.env.APP_ID,
+  secretAccessKey: process.env.APP_SECRET,
+  region: "us-east-1",
+});
+
+const s3 = new AWS.S3();
+const transcribeService = new AWS.TranscribeService();
+
+const downloadFile = async (url, downloadPath) => {
+  const writer = fs.createWriteStream(downloadPath);
+
+  const response = await axios({
+    url,
+    method: "GET",
+    responseType: "stream",
+  });
+
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", resolve);
+    writer.on("error", reject);
+  });
+};
+
+const uploadFile = async (bucketName, filePath, keyName) => {
+  const fileContent = fs.readFileSync(filePath);
+  const params = {
+    Bucket: bucketName,
+    Key: keyName + ".ogg",
+    Body: fileContent,
+  };
+
+  try {
+    const data = await s3.upload(params).promise();
+    console.log("File Uploaded Successfully", data.Location);
+    return data.Location;
+  } catch (err) {
+    console.log("Error", err);
+    throw err;
+  }
+};
+
+const startTranscriptionJob = async (bucketName, keyName) => {
+  const jobName = `transcription-${Date.now()}`;
+  const params = {
+    TranscriptionJobName: jobName,
+    LanguageCode: "en-US",
+    Media: {
+      MediaFileUri: `s3://${bucketName}/${keyName}.ogg`,
+    },
+  };
+
+  try {
+    const data = await transcribeService
+      .startTranscriptionJob(params)
+      .promise();
+    console.log("Transcription Job Started", data);
+    return jobName;
+  } catch (err) {
+    console.log("Error starting transcription job", err);
+    throw err;
+  }
+};
+
+const getTranscriptionResult = async (jobName) => {
+  const params = {
+    TranscriptionJobName: jobName,
+  };
+
+  while (true) {
+    try {
+      const data = await transcribeService
+        .getTranscriptionJob(params)
+        .promise();
+
+      if (data.TranscriptionJob.TranscriptionJobStatus === "COMPLETED") {
+        const transcriptionUrl =
+          data.TranscriptionJob.Transcript.TranscriptFileUri;
+        const response = await axios.get(transcriptionUrl);
+        return response.data.results.transcripts[0].transcript;
+      } else if (data.TranscriptionJob.TranscriptionJobStatus === "FAILED") {
+        throw new Error("Transcription job failed");
+      }
+      console.log("Waiting for transcription job to complete...");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    } catch (err) {
+      console.log("Error getting transcription result", err);
+      throw err;
+    }
+  }
+};
+
+app.post("/voice", async (req, res) => {
   const message = req.body;
-  console.log("message: ", message);
 
   if (message.voiceNoteUrl) {
-    res.json({ message: "Voice note received!" });
+    const url = message.voiceNoteUrl;
+    const downloadPath = path.join(__dirname, "downloaded_audio.mp3");
+    const bucketName = "trayacarevoice";
+    const keyName = JSON.stringify(new Date().getTime());
+
+    try {
+      console.log("Downloading file...");
+      await downloadFile(url, downloadPath);
+      console.log("File downloaded successfully");
+
+      console.log("Uploading file to S3...");
+      const s3Url = await uploadFile(bucketName, downloadPath, keyName);
+      console.log("File uploaded successfully");
+
+      console.log("Starting transcription job...");
+      const jobName = await startTranscriptionJob(bucketName, keyName);
+
+      console.log("Fetching transcription result...");
+      const transcriptionResult = await getTranscriptionResult(jobName);
+      console.log("Transcription result fetched");
+
+      res.json({
+        message: "Voice note received, uploaded, and transcribed!",
+        s3Url,
+        transcribedText: transcriptionResult,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).json({ message: "Failed to process voice note." });
+    } finally {
+      // Clean up downloaded file
+      fs.unlinkSync(downloadPath);
+    }
   } else {
     res.json({ message: "No voice note found." });
   }
