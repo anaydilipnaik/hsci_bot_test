@@ -12,10 +12,13 @@
   "dependencies": {
     "@supabase/realtime-js": "^2.9.5",
     "@supabase/supabase-js": "^2.43.1",
+    "aws-sdk": "^2.1645.0",
     "axios": "^1.6.8",
     "cors": "^2.8.5",
     "express": "^4.19.2",
+    "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "path": "^0.12.7"
   }
 }
