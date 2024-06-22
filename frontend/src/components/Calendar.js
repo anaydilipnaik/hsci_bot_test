@@ -92,6 +92,7 @@ const CalendarComponent = ({
         </div>
         <Calendar
           localizer={localizer}
+          longPressThreshold={100}
           events={events}
           defaultView="week"
           views={["week", "day"]}
