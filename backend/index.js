@@ -114,6 +114,12 @@ const getTranscriptionResult = async (jobName) => {
   }
 };
 
+app.get("/analytics", async (req, res, next) => {
+  res.status(200).json({
+    message: "ROUTE for backend.trayacare.hsciglobal.org/analytics",
+  });
+});
+
 app.post("/voice", async (req, res) => {
   const message = req.body;
 
@@ -504,7 +510,8 @@ async function triggerFunction(payload) {
     const endDateTimeInTZSCP = toZonedTime(endDateTimeUTC, gupshupSCPTimezone);
 
     // Format the date and time in the desired format
-    const formattedDate = format(startDateTimeInTZPatient, "yyyy-MM-dd");
+    const formattedDatePatient = format(startDateTimeInTZPatient, "yyyy-MM-dd");
+    const formattedDateSCP = format(startDateTimeInTZSCP, "yyyy-MM-dd");
     const formattedStartPatient = format(startDateTimeInTZPatient, "HH:mm");
     const formattedEndPatient = format(endDateTimeInTZPatient, "HH:mm");
     const formattedStartSCP = format(startDateTimeInTZSCP, "HH:mm");
@@ -518,7 +525,7 @@ async function triggerFunction(payload) {
         phone: payload.new.whatsapp_phone_no,
         name: payload.new.name,
         matched_person: data.name,
-        meeting_date: formatDate(formattedDate),
+        meeting_date: formatDate(formattedDatePatient),
         meeting_time:
           formatTime(formattedStartPatient) +
           "-" +
@@ -545,7 +552,7 @@ async function triggerFunction(payload) {
         phone: data.phone,
         name: data.name,
         matched_person: payload.new.name,
-        meeting_date: formatDate(formattedDate),
+        meeting_date: formatDate(formattedDateSCP),
         meeting_time:
           formatTime(formattedStartSCP) +
           "-" +
