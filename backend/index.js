@@ -4,6 +4,8 @@ const { RealtimeClient } = require("@supabase/realtime-js");
 const axios = require("axios");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+const { toZonedTime } = require("date-fns-tz");
+const { format } = require("date-fns");
 
 // Initialize the Express app
 const app = express();
@@ -467,6 +469,47 @@ async function triggerFunction(payload) {
       insertResult.data[0].meeting_link_scp
     )[0];
 
+    let gupshupPatientDate = data.date;
+    let gupshupPatientStart = data.start_time;
+    let gupshupPatientEnd = data.end_time;
+    let gupshupPatientTimezone = payload.new.timezone;
+    let gupshupSCPTimezone = data.timezone;
+
+    // Extract year, month, day, hours, and minutes from the date and time strings
+    const [year, month, day] = gupshupPatientDate.split("-").map(Number);
+    const [startHour, startMinute] = gupshupPatientStart.split(":").map(Number);
+    const [endHour, endMinute] = gupshupPatientEnd.split(":").map(Number);
+
+    // Create Date objects in UTC
+    const startDateTimeUTC = new Date(
+      Date.UTC(year, month - 1, day, startHour, startMinute)
+    );
+    const endDateTimeUTC = new Date(
+      Date.UTC(year, month - 1, day, endHour, endMinute)
+    );
+
+    // Convert the UTC date-time to the desired timezone
+    const startDateTimeInTZPatient = toZonedTime(
+      startDateTimeUTC,
+      gupshupPatientTimezone
+    );
+    const endDateTimeInTZPatient = toZonedTime(
+      endDateTimeUTC,
+      gupshupPatientTimezone
+    );
+    const startDateTimeInTZSCP = toZonedTime(
+      startDateTimeUTC,
+      gupshupSCPTimezone
+    );
+    const endDateTimeInTZSCP = toZonedTime(endDateTimeUTC, gupshupSCPTimezone);
+
+    // Format the date and time in the desired format
+    const formattedDate = format(startDateTimeInTZPatient, "yyyy-MM-dd");
+    const formattedStartPatient = format(startDateTimeInTZPatient, "HH:mm");
+    const formattedEndPatient = format(endDateTimeInTZPatient, "HH:mm");
+    const formattedStartSCP = format(startDateTimeInTZSCP, "HH:mm");
+    const formattedEndSCP = format(endDateTimeInTZSCP, "HH:mm");
+
     // Gupshup callback URL and payload data
     const payloadDataPatient = {
       event_name: "appointment_details",
@@ -475,9 +518,14 @@ async function triggerFunction(payload) {
         phone: payload.new.whatsapp_phone_no,
         name: payload.new.name,
         matched_person: data.name,
-        meeting_date: formatDate(data.date),
+        meeting_date: formatDate(formattedDate),
         meeting_time:
-          formatTime(data.start_time) + "-" + formatTime(data.end_time),
+          formatTime(formattedStartPatient) +
+          "-" +
+          formatTime(formattedEndPatient) +
+          " (" +
+          gupshupPatientTimezone +
+          ")",
         meeting_link:
           "http://trayaschedule.hsciglobal.org/meeting?" +
           meetingLinkKeyPatient +
@@ -497,9 +545,14 @@ async function triggerFunction(payload) {
         phone: data.phone,
         name: data.name,
         matched_person: payload.new.name,
-        meeting_date: formatDate(data.date),
+        meeting_date: formatDate(formattedDate),
         meeting_time:
-          formatTime(data.start_time) + "-" + formatTime(data.end_time),
+          formatTime(formattedStartSCP) +
+          "-" +
+          formatTime(formattedEndSCP) +
+          " (" +
+          gupshupSCPTimezone +
+          ")",
         meeting_link:
           "http://trayaschedule.hsciglobal.org/meeting?" +
           meetingLinkKeyScp +
