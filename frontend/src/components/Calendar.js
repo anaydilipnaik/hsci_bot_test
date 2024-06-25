@@ -137,6 +137,8 @@ const CalendarComponent = ({
           scrollToTime={scrollToTime}
           onSelectEvent={handleEventClick}
           slotPropGetter={slotPropGetter}
+          step={60} // 60 minutes per step (min 1 hour bookings)
+          timeslots={1}
         />
       </div>
     </>
