@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "moment-timezone";
@@ -30,7 +30,17 @@ const CalendarComponent = ({
       alert("Cannot select past dates.");
       return;
     }
-    handleDateSelect(slotInfo);
+
+    if (
+      !events.some((slot) => {
+        return (
+          slot.start.getTime() === slotInfo.start.getTime() &&
+          slot.end.getTime() === slotInfo.end.getTime()
+        );
+      })
+    ) {
+      handleDateSelect(slotInfo);
+    }
   };
 
   // Disable past dates visually
