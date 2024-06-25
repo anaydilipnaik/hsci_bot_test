@@ -52,14 +52,14 @@ const PreferencesLayout = () => {
     setSelectedTimeZone(e.target.value);
   };
 
-  const convertToPSTTime = (date) => {
-    const timeZone = "America/Los_Angeles";
+  const convertToUTCTime = (date) => {
+    const timeZone = "UTC";
     const zonedDate = toZonedTime(date, timeZone);
     return format(zonedDate, "HH:mm", { timeZone });
   };
 
-  const convertToPSTDate = (date) => {
-    const timeZone = "America/Los_Angeles";
+  const convertToUTCDate = (date) => {
+    const timeZone = "UTC";
     const zonedDate = toZonedTime(date, timeZone);
     return format(zonedDate, "yyyy-MM-dd", { timeZone });
   };
@@ -71,12 +71,12 @@ const PreferencesLayout = () => {
     const formattedStart = fromZonedTime(startDate, selectedTimeZone);
     const formattedEnd = fromZonedTime(endDate, selectedTimeZone);
 
-    const startPST = convertToPSTTime(formattedStart);
-    const endPST = convertToPSTTime(formattedEnd);
-    const datePST = convertToPSTDate(formattedStart);
+    const startUTC = convertToUTCTime(formattedStart);
+    const endUTC = convertToUTCTime(formattedEnd);
+    const dateUTC = convertToUTCDate(formattedStart);
 
     try {
-      await addSCPAvailability(user.id, datePST, startPST, endPST);
+      await addSCPAvailability(user.id, dateUTC, startUTC, endUTC);
       await getAvailability();
     } catch (err) {
       console.error(err);
@@ -139,7 +139,7 @@ const PreferencesLayout = () => {
       user.id,
       languagesSpoken,
       servicesOffered,
-      "America/Los_Angeles"
+      selectedTimeZone
     )
       .then(async (res) => {
         if (res) {
@@ -213,16 +213,18 @@ const PreferencesLayout = () => {
   const getAvailability = async () => {
     const res = await getScpAvailability(user.id);
     let initialData = res.map((row) => {
-      let startDateTime = `${row.date} ${row.start_time}`;
-      let endDateTime = `${row.date} ${row.end_time}`;
-
-      let start = new Date(startDateTime);
-      let end = new Date(endDateTime);
+      // Parse the date and time as UTC
+      let startDateTime = moment
+        .utc(`${row.date} ${row.start_time}`, "YYYY-MM-DD HH:mm")
+        .toDate();
+      let endDateTime = moment
+        .utc(`${row.date} ${row.end_time}`, "YYYY-MM-DD HH:mm")
+        .toDate();
 
       return {
         id: row.id,
-        start: start,
-        end: end,
+        start: startDateTime,
+        end: endDateTime,
       };
     });
     setEvents(initialData);
