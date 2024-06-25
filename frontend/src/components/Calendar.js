@@ -22,6 +22,30 @@ const CalendarComponent = ({
   const scrollToTime = new Date();
   scrollToTime.setHours(8, 0, 0, 0); // Set the scroll to 8 AM
 
+  const now = new Date();
+
+  // Disable past dates selection
+  const handleSelectSlot = (slotInfo) => {
+    if (slotInfo.start < now) {
+      alert("Cannot select past dates.");
+      return;
+    }
+    handleDateSelect(slotInfo);
+  };
+
+  // Disable past dates visually
+  const slotPropGetter = (date) => {
+    if (date < now) {
+      return {
+        style: {
+          backgroundColor: "#e9ecef",
+          pointerEvents: "none",
+        },
+      };
+    }
+    return {};
+  };
+
   return (
     <>
       <Sidebar setIsNext={setIsNext} handleSubmit={handleSubmit} />
@@ -97,7 +121,7 @@ const CalendarComponent = ({
           defaultView="week"
           views={["week", "day"]}
           selectable
-          onSelectSlot={handleDateSelect}
+          onSelectSlot={handleSelectSlot}
           style={{ height: "100%" }}
           components={{
             event: CustomEvent,
@@ -112,6 +136,7 @@ const CalendarComponent = ({
           }}
           scrollToTime={scrollToTime}
           onSelectEvent={handleEventClick}
+          slotPropGetter={slotPropGetter}
         />
       </div>
     </>
