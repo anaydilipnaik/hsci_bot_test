@@ -69,6 +69,8 @@ const CalendarComponent = ({
     return {};
   };
 
+  const today = new Date();
+
   return (
     <>
       <Sidebar setIsNext={setIsNext} handleSubmit={handleSubmit} />
@@ -81,7 +83,7 @@ const CalendarComponent = ({
           margin: "20px auto",
           maxWidth: "1000px",
           width: "90%",
-          height: "50%",
+          height: "calc(100vh - 40px)", // Adjust height to be dynamic
           overflow: "hidden",
         }}
       >
@@ -145,7 +147,7 @@ const CalendarComponent = ({
           views={["week", "day"]}
           selectable
           onSelectSlot={handleSelectSlot}
-          style={{ height: "100%" }}
+          style={{ height: "calc(100% - 100px)" }}
           components={{
             event: CustomEvent,
           }}
@@ -162,6 +164,26 @@ const CalendarComponent = ({
           slotPropGetter={slotPropGetter}
           step={30}
           timeslots={2}
+          min={
+            new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              0,
+              0,
+              0
+            )
+          }
+          max={
+            new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              today.getDate(),
+              23,
+              59,
+              59
+            )
+          }
         />
       </div>
     </>
