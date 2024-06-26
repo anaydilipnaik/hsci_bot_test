@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Calendar, momentLocalizer } from "react-big-calendar";
 import moment from "moment";
 import "moment-timezone";
@@ -24,23 +24,36 @@ const CalendarComponent = ({
 
   const now = new Date();
 
-  // Disable past dates selection
   const handleSelectSlot = (slotInfo) => {
+    const now = new Date();
+
     if (slotInfo.start < now) {
       alert("Cannot select past dates.");
       return;
     }
 
-    if (
-      !events.some((slot) => {
-        return (
-          slot.start.getTime() === slotInfo.start.getTime() &&
-          slot.end.getTime() === slotInfo.end.getTime()
-        );
-      })
-    ) {
-      handleDateSelect(slotInfo);
+    // Check if the selected slot is at least one hour long
+    const duration = (slotInfo.end - slotInfo.start) / (1000 * 60);
+    if (duration < 60) {
+      alert("Minimum booking duration is 1 hour.");
+      return;
     }
+
+    // Check if the selected slot overlaps with any existing events
+    const isOverlapping = events.some((slot) => {
+      return (
+        (slotInfo.start >= slot.start && slotInfo.start < slot.end) ||
+        (slotInfo.end > slot.start && slotInfo.end <= slot.end) ||
+        (slotInfo.start <= slot.start && slotInfo.end >= slot.end)
+      );
+    });
+
+    if (isOverlapping) {
+      alert("Selected time slot overlaps with an existing event.");
+      return;
+    }
+
+    handleDateSelect(slotInfo);
   };
 
   // Disable past dates visually
@@ -68,7 +81,7 @@ const CalendarComponent = ({
           margin: "20px auto",
           maxWidth: "1000px",
           width: "90%",
-          height: "600px",
+          height: "50%",
           overflow: "hidden",
         }}
       >
@@ -147,8 +160,8 @@ const CalendarComponent = ({
           scrollToTime={scrollToTime}
           onSelectEvent={handleEventClick}
           slotPropGetter={slotPropGetter}
-          step={60} // 60 minutes per step (min 1 hour bookings)
-          timeslots={1}
+          step={30}
+          timeslots={2}
         />
       </div>
     </>
