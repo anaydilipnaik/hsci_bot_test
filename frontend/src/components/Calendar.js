@@ -66,6 +66,15 @@ const CalendarComponent = ({
         },
       };
     }
+    const hour = date.getHours();
+    if (hour < 8 || hour >= 21) {
+      return {
+        style: {
+          backgroundColor: "#DBE8FF",
+        },
+      };
+    }
+
     return {};
   };
 
