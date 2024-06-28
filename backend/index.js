@@ -115,9 +115,7 @@ const getTranscriptionResult = async (jobName) => {
 };
 
 app.get("/analytics", async (req, res, next) => {
-  res.status(200).json({
-    message: "ROUTE for backend.trayacare.hsciglobal.org/analytics",
-  });
+  // TODO
 });
 
 app.post("/voice", async (req, res) => {
@@ -201,38 +199,50 @@ app.get("/", async (req, res, next) => {
 
 app.post("/feedback-loop", async (req, res, next) => {
   console.log("IN FEEDBACK LOOP: ", req.body);
-  try {
-    const config = {
-      headers: {
-        Authorization: "ed048b5b-2dd7-491c-a8e5-3ababf728e5f",
-        "Content-Type": "application/json",
-      },
-    };
 
-    const gupshupUrl =
-      "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/1f71128216413333213086552";
+  const dataJson = {
+    phone: req.body.whatsapp_phone_no,
+    name: req.body.name,
+    appointment_id: req.body.appointment_id,
+    role_type: req.body.role_type,
+    matched_name: req.body.matched_name,
+  };
 
-    const feedbackPayload = {
-      event_name: "feedback_loop",
-      event_time: new Date().toISOString(),
-      user: {
-        phone: req.body.whatsapp_phone_no,
-        name: req.body.name,
-        appointment_id: req.body.appointment_id,
-        role_type: req.body.role_type,
-        matched_name: req.body.matched_name,
-      },
-      txid: "456",
-    };
+  const insertResult = await supabase
+    .from("pending_feedback")
+    .insert([dataJson])
+    .select();
 
-    console.log("feedbackPayload: ", feedbackPayload);
+  if (insertResult.error) {
+    throw insertResult.error;
+  } else {
+    try {
+      const config = {
+        headers: {
+          Authorization: "ed048b5b-2dd7-491c-a8e5-3ababf728e5f",
+          "Content-Type": "application/json",
+        },
+      };
 
-    await axios.post(gupshupUrl, feedbackPayload, config);
+      const gupshupUrl =
+        "https://notifications.gupshup.io/notifications/callback/service/ipass/project/31566410/integration/1f71128216413333213086552";
 
-    res.status(200).json({ message: "success" });
-  } catch (error) {
-    console.error("Error: ", error);
-    res.status(500).send("Something went wrong");
+      const feedbackPayload = {
+        event_name: "feedback_loop",
+        event_time: new Date().toISOString(),
+        user: dataJson,
+        txid: "456",
+      };
+
+      console.log("feedbackPayload: ", feedbackPayload);
+
+      await axios.post(gupshupUrl, feedbackPayload, config);
+
+      res.status(200).json({ message: "success" });
+    } catch (error) {
+      console.error("Error: ", error);
+      res.status(500).send("Something went wrong");
+    }
   }
 });
 
