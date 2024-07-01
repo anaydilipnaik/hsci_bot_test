@@ -587,6 +587,7 @@ async function triggerFunction(payload) {
         "http://trayaschedule.hsciglobal.org/meeting?" +
         meetingLinkKeyScp +
         "&role=s",
+      appointment_id: newAppointmentId,
     };
 
     const insertSCPResult = await supabase
