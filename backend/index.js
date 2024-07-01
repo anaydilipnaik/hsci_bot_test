@@ -527,58 +527,90 @@ async function triggerFunction(payload) {
     const formattedStartSCP = format(startDateTimeInTZSCP, "HH:mm");
     const formattedEndSCP = format(endDateTimeInTZSCP, "HH:mm");
 
-    // Gupshup callback URL and payload data
-    const payloadDataPatient = {
-      event_name: "appointment_details",
-      event_time: JSON.stringify(new Date()),
-      user: {
-        phone: payload.new.whatsapp_phone_no,
-        name: payload.new.name,
-        matched_person: data.name,
-        meeting_date: formatDate(formattedDatePatient),
-        meeting_time:
-          formatTime(formattedStartPatient) +
-          "-" +
-          formatTime(formattedEndPatient) +
-          " (" +
-          gupshupPatientTimezone +
-          ")",
-        meeting_link:
-          "http://trayaschedule.hsciglobal.org/meeting?" +
-          meetingLinkKeyPatient +
-          "&role=p",
-        appointment_id: newAppointmentId,
-      },
-      txid: "123",
+    const payloadPatientJson = {
+      phone: payload.new.whatsapp_phone_no,
+      name: payload.new.name,
+      matched_person: data.name,
+      meeting_date: formatDate(formattedDatePatient),
+      meeting_time:
+        formatTime(formattedStartPatient) +
+        "-" +
+        formatTime(formattedEndPatient) +
+        " (" +
+        gupshupPatientTimezone +
+        ")",
+      meeting_link:
+        "http://trayaschedule.hsciglobal.org/meeting?" +
+        meetingLinkKeyPatient +
+        "&role=p",
+      appointment_id: newAppointmentId,
     };
 
-    // Send POST requests with the Authorization header
-    await axios.post(gupshupUrl, payloadDataPatient, config);
+    const insertPatientResult = await supabase
+      .from("pending_matches")
+      .insert([payloadPatientJson])
+      .select();
 
-    const payloadDataScp = {
-      event_name: "appointment_details",
-      event_time: JSON.stringify(new Date()),
-      user: {
-        phone: data.phone,
-        name: data.name,
-        matched_person: payload.new.name,
-        meeting_date: formatDate(formattedDateSCP),
-        meeting_time:
-          formatTime(formattedStartSCP) +
-          "-" +
-          formatTime(formattedEndSCP) +
-          " (" +
-          gupshupSCPTimezone +
-          ")",
-        meeting_link:
-          "http://trayaschedule.hsciglobal.org/meeting?" +
-          meetingLinkKeyScp +
-          "&role=s",
-      },
-      txid: "123",
+    if (insertPatientResult.error) {
+      throw insertPatientResult.error;
+    } else {
+      try {
+        // Gupshup callback URL and payload data
+        const payloadDataPatient = {
+          event_name: "appointment_details",
+          event_time: JSON.stringify(new Date()),
+          user: payloadPatientJson,
+          txid: "123",
+        };
+
+        // Send POST requests with the Authorization header
+        await axios.post(gupshupUrl, payloadDataPatient, config);
+      } catch (error) {
+        console.error("Error: ", error);
+        res.status(500).send("Something went wrong");
+      }
+    }
+
+    const payloadSCPJson = {
+      phone: data.phone,
+      name: data.name,
+      matched_person: payload.new.name,
+      meeting_date: formatDate(formattedDateSCP),
+      meeting_time:
+        formatTime(formattedStartSCP) +
+        "-" +
+        formatTime(formattedEndSCP) +
+        " (" +
+        gupshupSCPTimezone +
+        ")",
+      meeting_link:
+        "http://trayaschedule.hsciglobal.org/meeting?" +
+        meetingLinkKeyScp +
+        "&role=s",
     };
 
-    await axios.post(gupshupUrl, payloadDataScp, config);
+    const insertSCPResult = await supabase
+      .from("pending_matches")
+      .insert([payloadSCPJson])
+      .select();
+
+    if (insertSCPResult.error) {
+      throw insertSCPResult.error;
+    } else {
+      try {
+        const payloadDataScp = {
+          event_name: "appointment_details",
+          event_time: JSON.stringify(new Date()),
+          user: payloadSCPJson,
+          txid: "123",
+        };
+
+        await axios.post(gupshupUrl, payloadDataScp, config);
+      } catch (error) {
+        console.error("Error: ", error);
+        res.status(500).send("Something went wrong");
+      }
+    }
   } catch (err) {
     console.error("Error in trigger function:", err.message);
   }
